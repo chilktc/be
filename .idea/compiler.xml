@@ -7,12 +7,15 @@
         <processorPath useClasspath="false">
           <entry name="$PROJECT_DIR$/../.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.42/8365263844ebb62398e0dc33057ba10ba472d3b8/lombok-1.18.42.jar" />
         </processorPath>
-        <module name="gateway.main" />
+        <module name="auth.main" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="auth" options="-parameters" />
+      <module name="auth.main" options="-parameters" />
+      <module name="auth.test" options="-parameters" />
       <module name="gateway" options="-parameters" />
       <module name="gateway.main" options="-parameters" />
       <module name="gateway.test" options="-parameters" />
