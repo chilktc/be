@@ -1,0 +1,50 @@
+name: be-ci
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main", "CICD", "feat/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Detect build tool
+        id: detect
+        shell: bash
+        run: |
+          if [ -f "./gradlew" ] || [ -f "./gradlew.bat" ]; then
+            echo "tool=gradle" >> "$GITHUB_OUTPUT"
+          elif [ -f "./pom.xml" ]; then
+            echo "tool=maven" >> "$GITHUB_OUTPUT"
+          else
+            echo "No gradlew or pom.xml found. Cannot determine build tool."
+            exit 1
+          fi
+
+      - name: Gradle - Test
+        if: steps.detect.outputs.tool == 'gradle'
+        shell: bash
+        run: |
+          chmod +x ./gradlew || true
+          ./gradlew --no-daemon clean test
+
+      - name: Maven - Test
+        if: steps.detect.outputs.tool == 'maven'
+        shell: bash
+        run: |
+          mvn -B -ntp test
