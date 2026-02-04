@@ -96,7 +96,8 @@ public class AuthController {
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> logout(
 		@RequestHeader("X-User-Id") String userId,
-		@RequestHeader("Authorization") String authorization
+		@RequestHeader("Authorization") String authorization,
+		HttpServletResponse response
 	) {
 		// Bearer 제거
 		String accessToken = authorization.startsWith("Bearer ")
@@ -104,6 +105,20 @@ public class AuthController {
 			: authorization;
 
 		authService.logout(UUID.fromString(userId), accessToken);
+
+		// refreshToken 쿠키 만료
+		response.addHeader(
+			"Set-Cookie",
+			ResponseCookie.from("refreshToken", "")
+				.httpOnly(true)
+				.secure(false)
+				.sameSite("Lax")
+				.path("/auth/refresh")
+				.maxAge(0)
+				.build()
+				.toString()
+		);
+
 		return ApiResult.ok();
 	}
 }
