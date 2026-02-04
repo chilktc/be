@@ -25,6 +25,43 @@ services:
       - mysql-data:/var/lib/mysql
     restart: unless-stopped
 
+  auth:
+    build:
+      context: .
+      dockerfile: ./auth/Dockerfile
+    container_name: chilktc-auth
+    restart: always
+    depends_on:
+      - mysql
+      - redis
+    ports:
+      - "8081:8080"
+    environment:
+      - DB_HOST=auth-db
+      - DB_PORT=3306
+      - DB_DATABASE=auth
+      - DB_USERNAME=auth
+      - DB_PASSWORD=auth
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  gateway:
+    build:
+      context: .
+      dockerfile: ./gateway/Dockerfile
+    container_name: chilktc-gateway
+    restart: always
+    depends_on:
+      - auth
+      - redis
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTH_SERVER_HOST=chilktc-auth
+      - AUTH_SERVER_PORT=8081
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
 volumes:
   redis-data:
   mysql-data:
