@@ -23,15 +23,16 @@ public class User {
 	@Column(nullable = false, updatable = false)
 	private UUID id;
 
-	@Column
+	@Column(nullable = false, unique = true)
 	private String loginId;
 
-	@Column
+	@Column(nullable = false)
 	private String password;
 
-	@Column
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Role role;
+
 
 	public User(UUID id, String loginId, String password, Role role){
 		this.id = id;
