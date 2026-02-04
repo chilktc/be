@@ -6,15 +6,20 @@ spring:
     name: auth
 
   datasource:
-    url: jdbc:mysql://localhost:3306/auth
-    username: auth
-    password: auth
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_DATABASE:auth}
+    username: ${DB_USERNAME:auth}
+    password: ${DB_PASSWORD:auth}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
     open-in-view: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 jwt:
   secret: ${kt.jwt.secret:kt-cloud-tech-up-final-project-2026020201010101}
