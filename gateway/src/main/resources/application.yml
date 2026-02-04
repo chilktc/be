@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # /auth로 시작하는 모든 경로의 요청은 auth-service(localhost:8081)으로 전달
+            - id: auth-jwt
+              uri: http://localhost:8081
+              predicates:
+                - Path=/auth/logout
+              filters:
+                - JwtAuthenticationFilter
+            - id: auth
+              uri: http://localhost:8081
+              predicates:
+                - Path=/auth/**
+
+jwt:
+  secret: ${kt.jwt.secret:kt-cloud-tech-up-final-project-2026020201010101}
+  access-token-expiration: ${kt.jwt.access-token-expiration:300000} #5
+  refresh-token-expiration: ${kt.jwt.refresh-token-expiration:43200000} #12

@@ -1,0 +1,22 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/auth
+    username: auth
+    password: auth
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+
+jwt:
+  secret: ${kt.jwt.secret:kt-cloud-tech-up-final-project-2026020201010101}
+  access-token-expiration: ${kt.jwt.access-token-expiration:300000} # 5
+  refresh-token-expiration: ${kt.jwt.refresh-token-expiration:43200000} # 12

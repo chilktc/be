@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: auth-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: auth
+      MYSQL_USER: auth
+      MYSQL_PASSWORD: auth
+      TZ: Asia/Seoul
+    volumes:
+      - mysql-data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  mysql-data:
