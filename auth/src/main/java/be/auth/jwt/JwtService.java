@@ -17,7 +17,7 @@ public class JwtService {
 
 		return Jwts
 			.builder()
-			.issuer("shopping-api")
+			.issuer("auth-service")
 			.subject(id.toString())
 			.claim("role", role.name())
 			.claim("token_type", tokenType)
@@ -62,17 +62,17 @@ public class JwtService {
 		return UUID.fromString(id);
 	}
 
-	public String parseName(String token) {
-		var id = Jwts
-			.parser()
-			.verifyWith(jwtProperties.getSecret())
-			.build()
-			.parseSignedClaims(token)
-			.getPayload()
-			.get("loginId", String.class);
-
-		return id;
-	}
+	// public String parseName(String token) {
+	// 	var id = Jwts
+	// 		.parser()
+	// 		.verifyWith(jwtProperties.getSecret())
+	// 		.build()
+	// 		.parseSignedClaims(token)
+	// 		.getPayload()
+	// 		.get("loginId", String.class);
+	//
+	// 	return id;
+	// }
 
 	// public Role parseRole(String token) {
 	// 	String role = Jwts
