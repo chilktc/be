@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import be.auth.domain.OauthProvider;
 import be.auth.domain.User;
 import be.auth.jwt.JwtService;
 import be.auth.jwt.Role;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @RequiredArgsConstructor
 public class AuthService {
+
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtService jwtService;
@@ -29,7 +31,7 @@ public class AuthService {
 	private final AccessTokenBlacklistService accessTokenBlacklistService;
 
 	public Pair<String, String> login(String loginId, String password) {
-		var user = userRepository.findByLoginId(loginId)
+		var user = userRepository.findByLoginIdAndProvider(loginId, OauthProvider.SERVER)
 			.orElseThrow(() -> new CustomException(ErrorCode.FAIL_LOGIN));
 
 		Preconditions.validate(passwordEncoder.matches(password, user.getPassword()), ErrorCode.FAIL_LOGIN);
@@ -89,18 +91,18 @@ public class AuthService {
 
 	public void signUp(String loginId, String password) {
 		Preconditions.validate(
-			!userRepository.existsByLoginId(loginId),
+			!userRepository.existsByLoginIdAndProvider(loginId, OauthProvider.SERVER),
 			ErrorCode.EXIST_USER
 		);
 
 		String encodedPassword = passwordEncoder.encode(password);
 
-		User user = User.builder()
-			.id(UUID.randomUUID())
-			.loginId(loginId)
-			.password(encodedPassword)
-			.role(Role.USER)
-			.build();
+		User user = User.createServerUser(
+			UUID.randomUUID(),
+			loginId,
+			encodedPassword,
+			Role.USER
+		);
 
 		userRepository.save(user);
 	}
