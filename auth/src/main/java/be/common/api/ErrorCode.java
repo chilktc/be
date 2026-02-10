@@ -15,7 +15,10 @@ public enum ErrorCode {
 	DOES_NOT_MATCH_OLD_PASSWORD(HttpStatus.BAD_REQUEST, "기존 비밀번호가 일치하지 않습니다."),
 	CAN_NOT_ALLOWED_SAME_PASSWORD(HttpStatus.BAD_REQUEST, "기존 비밀번호와 동일한 비밀번호로 변경할 수 없습니다."),
 	ACCOUNT_INACTIVATED(HttpStatus.BAD_REQUEST, "비활성화 된 계정입니다."),
-	INVALID_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "다시 로그인 해주세요.")
+	INVALID_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "다시 로그인 해주세요."),
+	OAUTH_INVALID_CODE(HttpStatus.BAD_REQUEST, "유효하지 않은 OAuth 인증 코드입니다."),
+	OAUTH_TOKEN_EXCHANGE_FAILED(HttpStatus.UNAUTHORIZED, "OAuth 토큰 교환에 실패했습니다."),
+	OAUTH_USERINFO_FAILED(HttpStatus.UNAUTHORIZED, "OAuth 사용자 정보를 가져오지 못했습니다.")
 	,;
 	private final HttpStatus status;
 	private final String message;
