@@ -1,4 +1,4 @@
-package be.auth.response;
+package be.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
