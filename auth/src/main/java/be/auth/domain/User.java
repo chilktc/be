@@ -3,6 +3,8 @@ package be.auth.domain;
 import java.util.UUID;
 
 import be.auth.jwt.Role;
+import be.common.api.ErrorCode;
+import be.common.utils.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -103,6 +105,7 @@ public class User {
 		String encodedPassword,
 		Role role
 	){
+		Preconditions.validate(encodedPassword != null, ErrorCode.INVALID_PASSWORD);
 		return new User(
 			id,
 			email,
