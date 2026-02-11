@@ -21,9 +21,9 @@ import be.auth.jwt.JwtService;
 import be.auth.jwt.TokenType;
 import be.auth.repository.UserRepository;
 import be.common.utils.Preconditions;
-import be.dto.LoginResult;
-import be.dto.response.GoogleTokenResponse;
-import be.dto.response.GoogleUserInfo;
+import be.auth.dto.LoginResult;
+import be.auth.dto.response.GoogleTokenResponse;
+import be.auth.dto.response.GoogleUserInfo;
 import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 

@@ -16,7 +16,7 @@ import be.auth.repository.UserRepository;
 import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 import be.common.utils.Preconditions;
-import be.dto.LoginResult;
+import be.auth.dto.LoginResult;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 

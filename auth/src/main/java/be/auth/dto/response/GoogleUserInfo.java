@@ -1,4 +1,4 @@
-package be.dto.response;
+package be.auth.dto.response;
 
 public record GoogleUserInfo(
 		String sub,

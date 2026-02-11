@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import be.dto.request.SignUpRequest;
-import be.dto.request.LoginRequest;
-import be.dto.response.LoginResponse;
+import be.auth.dto.request.SignUpRequest;
+import be.auth.dto.request.LoginRequest;
+import be.auth.dto.response.LoginResponse;
 import be.auth.service.AuthService;
 import be.common.api.ApiResult;
 import be.common.api.ErrorCode;
