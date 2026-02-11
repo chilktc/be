@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import be.auth.request.SignUpRequest;
-import be.auth.request.LoginRequest;
-import be.auth.response.LoginResponse;
+import be.dto.request.SignUpRequest;
+import be.dto.request.LoginRequest;
+import be.dto.response.LoginResponse;
 import be.auth.service.AuthService;
 import be.common.api.ApiResult;
 import be.common.api.ErrorCode;
@@ -44,15 +44,12 @@ public class AuthController {
 		@RequestBody @Valid LoginRequest request,
 		HttpServletResponse response
 	) {
-		var pair = authService.login(request.loginId(), request.password());
-
-		String accessToken = pair.getFirst();
-		String refreshToken = pair.getSecond();
+		var result = authService.login(request.email(), request.password());
 
 		// Refresh Token을 HttpOnly Cookie로 설정
 		response.addHeader(
 			"Set-Cookie",
-			ResponseCookie.from("refreshToken", refreshToken)
+			ResponseCookie.from("refreshToken", result.refreshToken())
 				.httpOnly(true)
 				// TODO : 배포 서비스에서는 true를 사용
 				.secure(false)          // HTTPS 환경에서만
@@ -63,7 +60,7 @@ public class AuthController {
 				.toString()
 		);
 
-		return ApiResult.ok(new LoginResponse(accessToken));
+		return ApiResult.ok(new LoginResponse(result.accessToken(), result.firstLogin()));
 	}
 
 
@@ -78,7 +75,7 @@ public class AuthController {
 		@CookieValue("refreshToken") String refreshToken
 	) {
 		var pair = authService.refresh(refreshToken);
-		return ApiResult.ok(new LoginResponse(pair.getFirst()));
+		return ApiResult.ok(new LoginResponse(pair.getFirst(), false));
 	}
 
 	@Operation(summary = "회원가입", description = "회원 가입 API입니다.")
@@ -88,7 +85,7 @@ public class AuthController {
 	@PostMapping("/sign-up")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> create(@RequestBody @Valid SignUpRequest request) {
-		authService.signUp(request.loginId(), request.password());
+		authService.signUp(request.email(), request.password());
 		return ApiResult.ok();
 	}
 

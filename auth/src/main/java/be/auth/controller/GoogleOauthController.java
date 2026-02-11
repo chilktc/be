@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import be.auth.request.GoogleLoginRequest;
-import be.auth.response.LoginResponse;
+import be.dto.LoginResult;
+import be.dto.request.GoogleLoginRequest;
+import be.dto.response.LoginResponse;
 import be.auth.service.AuthService;
 import be.auth.service.GoogleOauthService;
 import be.common.api.ApiResult;
@@ -50,15 +51,12 @@ public class GoogleOauthController {
 		@RequestBody @Valid GoogleLoginRequest request,
 		HttpServletResponse response
 	) {
-		var pair = googleOauthService.login(request.code());
-
-		String accessToken = pair.getFirst();
-		String refreshToken = pair.getSecond();
+		LoginResult result = googleOauthService.login(request.code());
 
 		// Refresh Token을 HttpOnly Cookie로 설정
 		response.addHeader(
 			"Set-Cookie",
-			ResponseCookie.from("refreshToken", refreshToken)
+			ResponseCookie.from("refreshToken", result.refreshToken())
 				.httpOnly(true)
 				// TODO : 배포 서비스에서는 true를 사용
 				.secure(false)          // HTTPS 환경에서만
@@ -69,7 +67,7 @@ public class GoogleOauthController {
 				.toString()
 		);
 
-		return ApiResult.ok(new LoginResponse(accessToken));
+		return ApiResult.ok(new LoginResponse(result.accessToken(), result.firstLogin()));
 	}
 
 	@Operation(
