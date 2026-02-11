@@ -2,28 +2,26 @@ package be.auth.service;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.util.Pair;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.RestClientException;
 
-import be.auth.domain.OauthProvider;
 import be.auth.domain.User;
 import be.auth.jwt.JwtService;
-import be.auth.jwt.Role;
 import be.auth.jwt.TokenType;
 import be.auth.repository.UserRepository;
-import be.auth.response.GoogleTokenResponse;
-import be.auth.response.GoogleUserInfo;
+import be.dto.LoginResult;
+import be.dto.response.GoogleTokenResponse;
+import be.dto.response.GoogleUserInfo;
 import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 
@@ -33,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class GoogleOauthService {
 
 	private final RestTemplate restTemplate;
@@ -54,24 +53,21 @@ public class GoogleOauthService {
 		return URLDecoder.decode(once, StandardCharsets.UTF_8);
 	}
 
-	public Pair<String, String> login(String code) {
+	public LoginResult login(String code) {
 		String normalized = normalizeAuthCode(code);
 
 		GoogleTokenResponse token = exchangeCode(normalized);
 		GoogleUserInfo userInfo = fetchUserInfo(token.accessToken());
 
-		User user = userRepository.findByProviderAndProviderUserId(
-			OauthProvider.GOOGLE,
-			userInfo.sub()
-		).orElseGet(() ->
-			userRepository.save(
-				User.createGoogleUser(
-					UUID.randomUUID(),
-					userInfo.sub(),
-					Role.USER
-				)
-			)
-		);
+		String email = userInfo.email();
+		String googleSub = userInfo.sub();
+
+		User user = userRepository.findByEmail(email)
+			.orElseThrow(() -> new CustomException(ErrorCode.OAUTH_EMAIL_NOT_REGISTERED));
+
+		if (user.getProvider() == null) {
+			user.bindGoogleOAuth(googleSub);
+		}
 
 		var accessExp = jwtService.getAccessExpiration();
 		var refreshExp = jwtService.getRefreshExpiration();
@@ -82,7 +78,7 @@ public class GoogleOauthService {
 		long refreshTtlMs = refreshExp.getTime() - System.currentTimeMillis();
 		refreshTokenService.save(user.getId(), refreshToken, refreshTtlMs);
 
-		return Pair.of(accessToken, refreshToken);
+		return new LoginResult(accessToken, refreshToken, user.isFirstLogin());
 }
 
 	private GoogleTokenResponse exchangeCode(String code) {
