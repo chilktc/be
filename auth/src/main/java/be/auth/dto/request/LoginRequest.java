@@ -1,12 +1,11 @@
-package be.auth.request;
+package be.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record SignUpRequest(
+public record LoginRequest(
 	@NotBlank
-	String loginId,
+	String email,
 	@NotBlank
 	String password
 ) {
 }
-

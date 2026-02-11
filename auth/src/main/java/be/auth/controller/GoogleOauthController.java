@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -13,38 +12,46 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import be.auth.dto.request.SignUpRequest;
-import be.auth.dto.request.LoginRequest;
+import be.auth.dto.LoginResult;
+import be.auth.dto.request.GoogleLoginRequest;
 import be.auth.dto.response.LoginResponse;
 import be.auth.service.AuthService;
+import be.auth.service.GoogleOauthService;
 import be.common.api.ApiResult;
 import be.common.api.ErrorCode;
 import be.common.docs.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "기본 로그인 인증(백엔드용)", description = "인증 API")
+@Tag(name = "Google OAuth 인증", description = "소셜 로그인 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth")
-public class AuthController {
+@RequestMapping("/auth/oauth")
+public class GoogleOauthController {
+
+	private final GoogleOauthService googleOauthService;
 	private final AuthService authService;
 
-	@Operation(summary = "로그인", description = "아이디와 비밀번호로 로그인합니다.")
+	@Operation(
+		summary = "소셜 로그인",
+		description = "Authorization Code를 이용해 구글 로그인 후 서비스 토큰을 발급합니다."
+	)
 	@ApiErrorCodeExamples({
 		ErrorCode.FAIL_LOGIN,
 		ErrorCode.ACCOUNT_INACTIVATED,
 	})
 	@PostMapping("/login")
 	@ResponseStatus(HttpStatus.OK)
+
 	public ApiResult<LoginResponse> login(
-		@RequestBody @Valid LoginRequest request,
+		@RequestBody @Valid GoogleLoginRequest request,
 		HttpServletResponse response
 	) {
-		var result = authService.login(request.email(), request.password());
+		LoginResult result = googleOauthService.login(request.code());
 
 		// Refresh Token을 HttpOnly Cookie로 설정
 		response.addHeader(
@@ -63,35 +70,14 @@ public class AuthController {
 		return ApiResult.ok(new LoginResponse(result.accessToken(), result.firstLogin()));
 	}
 
-
-	@Operation(summary = "토큰 재발급", description = "Refresh Token을 이용해 Access Token을 재발급합니다.")
-	@ApiErrorCodeExamples({
-		ErrorCode.INVALID_REFRESH_TOKEN,
-		ErrorCode.NOT_FOUND_USER
-	})
-	@PostMapping("/refresh")
-	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<LoginResponse> refresh(
-		@CookieValue("refreshToken") String refreshToken
-	) {
-		var pair = authService.refresh(refreshToken);
-		return ApiResult.ok(new LoginResponse(pair.getFirst(), false));
-	}
-
-	@Operation(summary = "회원가입", description = "회원 가입 API입니다.")
-	@ApiErrorCodeExamples({
-		ErrorCode.EXIST_USER
-	})
-	@PostMapping("/sign-up")
-	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<Void> create(@RequestBody @Valid SignUpRequest request) {
-		authService.signUp(request.email(), request.password());
-		return ApiResult.ok();
-	}
-
+	@Operation(
+		summary = "소셜 로그아웃",
+		security = @SecurityRequirement(name = "bearerAuth"),
+		description = "토큰을 만료시키고 로그아웃합니다."
+	)
 	@PostMapping("/logout")
 	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<Void> logout(
+	public ApiResult<Void> googleLogout(
 		@RequestHeader("X-User-Id") String userId,
 		@RequestHeader("Authorization") String authorization,
 		HttpServletResponse response
