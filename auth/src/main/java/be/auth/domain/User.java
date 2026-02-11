@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 	name = "user",
 	uniqueConstraints = {
 		@UniqueConstraint(
+			name = "uk_provider_user",
 			columnNames = {"provider", "provider_user_id"}
 		)
 	}
@@ -30,15 +31,14 @@ public class User {
 	@Column(nullable = false, updatable = false)
 	private UUID id;
 
+	@Column(nullable = false, unique = true)
+	private String email;
+
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
 	private OauthProvider provider;
 
-	@Column(name = "provider_user_id", nullable = false)
+	@Column(name = "provider_user_id")
 	private String providerUserId;
-
-	@Column(unique = true)
-	private String loginId;
 
 	@Column
 	private String password;
@@ -47,44 +47,76 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
+	@Column(nullable = false)
+	private boolean isActive;
 
-	private User(UUID id, OauthProvider provider, String providerUserId, String loginId, String password, Role role){
+	@Column(nullable = false)
+	private boolean firstLogin;
+
+
+	private User(
+		UUID id,
+		String email,
+		OauthProvider provider,
+		String providerUserId,
+		String password,
+		Role role,
+		boolean isActive,
+		boolean firstLogin
+	) {
 		this.id = id;
+		this.email = email;
 		this.provider = provider;
 		this.providerUserId = providerUserId;
-		this.loginId = loginId;
 		this.password = password;
 		this.role = role;
+		this.isActive = isActive;
+		this.firstLogin = firstLogin;
 	}
 
-	public static User createGoogleUser(
+	public static User invitedUserByAdmin(
 		UUID id,
-		String googleSub,
+		String email,
 		Role role
-	){
+	) {
 		return new User(
 			id,
-			OauthProvider.GOOGLE,
-			googleSub,
+			email,
 			null,
 			null,
-			role
+			null,
+			role,
+			true,
+			true
 		);
 	}
 
+	public void bindGoogleOAuth(String googleSub) {
+		this.provider = OauthProvider.GOOGLE;
+		this.providerUserId = googleSub;
+	}
+
+
 	public static User createServerUser(
 		UUID id,
-		String loginId,
+		String email,
 		String encodedPassword,
 		Role role
 	){
 		return new User(
 			id,
+			email,
 			OauthProvider.SERVER,
-			loginId,
-			loginId,
+			email,
 			encodedPassword,
-			role
+			role,
+			true,
+			false
 		);
+	}
+
+	//TODO: 어드민 조직원 초대 API
+	public void completeFirstLogin() {
+		this.firstLogin = false;
 	}
 }

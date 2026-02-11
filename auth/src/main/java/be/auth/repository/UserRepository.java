@@ -16,18 +16,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 		String providerUserId
 	);
 
-	Optional<User> findByLoginIdAndProvider(
-		String loginId,
-		OauthProvider provider
-	);
-
-	boolean existsByLoginIdAndProvider(
-		String loginId,
-		OauthProvider provider
-	);
+	Optional<User> findByEmail(String email);
 
 	default User findByIdOrThrow(UUID id, ErrorCode errorCode) {
 		return findById(id).orElseThrow(() -> new CustomException(errorCode));
 	}
 
+	boolean existsByEmail(String email);
 }

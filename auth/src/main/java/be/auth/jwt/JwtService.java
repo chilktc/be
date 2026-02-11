@@ -69,7 +69,7 @@ public class JwtService {
 	// 		.build()
 	// 		.parseSignedClaims(token)
 	// 		.getPayload()
-	// 		.get("loginId", String.class);
+	// 		.get("email", String.class);
 	//
 	// 	return id;
 	// }
