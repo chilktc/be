@@ -18,7 +18,9 @@ public enum ErrorCode {
 	INVALID_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "다시 로그인 해주세요."),
 	OAUTH_INVALID_CODE(HttpStatus.BAD_REQUEST, "유효하지 않은 OAuth 인증 코드입니다."),
 	OAUTH_TOKEN_EXCHANGE_FAILED(HttpStatus.UNAUTHORIZED, "OAuth 토큰 교환에 실패했습니다."),
-	OAUTH_USERINFO_FAILED(HttpStatus.UNAUTHORIZED, "OAuth 사용자 정보를 가져오지 못했습니다.")
+	OAUTH_USERINFO_FAILED(HttpStatus.UNAUTHORIZED, "OAuth 사용자 정보를 가져오지 못했습니다."),
+	OAUTH_EMAIL_NOT_REGISTERED(HttpStatus.NOT_FOUND, "이메일로 등록된 사용자가 없습니다."),
+	OAUTH_PROVIDER_MISMATCH(HttpStatus.BAD_REQUEST, "OAuth 제공자 정보가 일치하지 않습니다.")
 	,;
 	private final HttpStatus status;
 	private final String message;
