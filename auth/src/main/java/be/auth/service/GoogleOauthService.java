@@ -50,6 +50,12 @@ public class GoogleOauthService {
 	@Value("${oauth.google.redirect-uri}")
 	private String redirectUri;
 
+	private static final String GOOGLE_TOKEN_URL =
+		"https://oauth2.googleapis.com/token";
+
+	private static final String GOOGLE_USERINFO_URL =
+		"https://openidconnect.googleapis.com/v1/userinfo";
+
 	private String normalizeAuthCode(String code) {
 		String once = URLDecoder.decode(code, StandardCharsets.UTF_8);
 		return URLDecoder.decode(once, StandardCharsets.UTF_8);
@@ -102,7 +108,7 @@ public class GoogleOauthService {
 			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
 			return restTemplate.postForObject(
-				"https://oauth2.googleapis.com/token",
+				GOOGLE_TOKEN_URL,
 				new HttpEntity<>(body, headers),
 				GoogleTokenResponse.class
 			);
@@ -121,7 +127,7 @@ public class GoogleOauthService {
 			headers.setBearerAuth(accessToken);
 
 			var response = restTemplate.exchange(
-				"https://openidconnect.googleapis.com/v1/userinfo",
+				GOOGLE_USERINFO_URL,
 				HttpMethod.GET,
 				new HttpEntity<>(headers),
 				GoogleUserInfo.class
