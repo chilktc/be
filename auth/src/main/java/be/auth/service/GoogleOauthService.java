@@ -15,10 +15,12 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.RestClientException;
 
+import be.auth.domain.OauthProvider;
 import be.auth.domain.User;
 import be.auth.jwt.JwtService;
 import be.auth.jwt.TokenType;
 import be.auth.repository.UserRepository;
+import be.common.utils.Preconditions;
 import be.dto.LoginResult;
 import be.dto.response.GoogleTokenResponse;
 import be.dto.response.GoogleUserInfo;
@@ -67,6 +69,12 @@ public class GoogleOauthService {
 
 		if (user.getProvider() == null) {
 			user.bindGoogleOAuth(googleSub);
+		}
+		else if (user.getProvider() == OauthProvider.GOOGLE) {
+			Preconditions.validate(
+				user.getProviderUserId().equals(googleSub),
+				ErrorCode.OAUTH_PROVIDER_MISMATCH
+			);
 		}
 
 		var accessExp = jwtService.getAccessExpiration();
