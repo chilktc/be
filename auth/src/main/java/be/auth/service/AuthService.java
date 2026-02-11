@@ -16,6 +16,7 @@ import be.auth.repository.UserRepository;
 import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 import be.common.utils.Preconditions;
+import be.dto.LoginResult;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 
@@ -30,11 +31,13 @@ public class AuthService {
 	private final RefreshTokenService refreshTokenService;
 	private final AccessTokenBlacklistService accessTokenBlacklistService;
 
-	public Pair<String, String> login(String loginId, String password) {
-		var user = userRepository.findByLoginIdAndProvider(loginId, OauthProvider.SERVER)
+	public LoginResult login(String email, String password) {
+		var user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.FAIL_LOGIN));
 
+		Preconditions.validate(user.getProvider() == OauthProvider.SERVER, ErrorCode.FAIL_LOGIN);
 		Preconditions.validate(passwordEncoder.matches(password, user.getPassword()), ErrorCode.FAIL_LOGIN);
+		Preconditions.validate(user.isActive(), ErrorCode.ACCOUNT_INACTIVATED);
 
 		var accessExp = jwtService.getAccessExpiration();
 		var refreshExp = jwtService.getRefreshExpiration();
@@ -45,7 +48,7 @@ public class AuthService {
 		long refreshTtlMs = refreshExp.getTime() - System.currentTimeMillis();
 		refreshTokenService.save(user.getId(), refreshToken, refreshTtlMs);
 
-		return Pair.of(accessToken, refreshToken);
+		return new LoginResult(accessToken, refreshToken, user.isFirstLogin());
 	}
 
 	public Pair<String, String> refresh(String refreshToken) {
@@ -61,6 +64,8 @@ public class AuthService {
 		}
 
 		var user = userRepository.findByIdOrThrow(userId, ErrorCode.NOT_FOUND_USER);
+
+		Preconditions.validate(user.isActive(), ErrorCode.ACCOUNT_INACTIVATED);
 
 		var newAccessExp = jwtService.getAccessExpiration();
 		var newRefreshExp = jwtService.getRefreshExpiration();
@@ -89,9 +94,9 @@ public class AuthService {
 		}
 	}
 
-	public void signUp(String loginId, String password) {
+	public void signUp(String email, String password) {
 		Preconditions.validate(
-			!userRepository.existsByLoginIdAndProvider(loginId, OauthProvider.SERVER),
+			!userRepository.existsByEmail(email),
 			ErrorCode.EXIST_USER
 		);
 
@@ -99,7 +104,7 @@ public class AuthService {
 
 		User user = User.createServerUser(
 			UUID.randomUUID(),
-			loginId,
+			email,
 			encodedPassword,
 			Role.USER
 		);
