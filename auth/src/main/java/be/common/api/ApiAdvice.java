@@ -2,7 +2,6 @@ package be.common.api;
 
 import java.util.Arrays;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,12 +20,12 @@ public class ApiAdvice {
 	public ResponseEntity<ErrorResponse.ErrorData> internalServerError(Exception e) {
 		e.printStackTrace();//<-에러가뜬건지 알아볼때
 		// 서버에러입니다
-		return ErrorResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, "서버에러입니다. 백엔드팀에 문의하세요.");
+		return ErrorResponse.error(ErrorCode.INTERNAL_SERVER_ERROR);
 	}
 
 	@ExceptionHandler(CustomException.class)
 	public ResponseEntity<ErrorResponse.ErrorData> customException(CustomException e) {
-		return ErrorResponse.error(e.getErrorCode().getStatus(), e.getErrorCode().getMessage());
+		return ErrorResponse.error(e.getErrorCode());
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -35,7 +34,7 @@ public class ApiAdvice {
 		var details = Arrays.toString(e.getDetailMessageArguments());
 		var message = details.split(",", 2)[1].replace("]", "").trim();
 
-		return ErrorResponse.error(HttpStatus.BAD_REQUEST, message);
+		return ErrorResponse.error(ErrorCode.VALIDATION_ERROR);
 	}
 
 }
