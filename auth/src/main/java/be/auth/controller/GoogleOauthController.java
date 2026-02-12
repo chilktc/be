@@ -79,7 +79,7 @@ public class GoogleOauthController {
 				.toString()
 		);
 
-		return ApiResult.ok(new LoginResponse(result.accessToken(), result.firstLogin()));
+		return ApiResult.ok(new LoginResponse(result.firstLogin()));
 	}
 
 	@Operation(
