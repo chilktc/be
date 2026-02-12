@@ -25,6 +25,13 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
 				.getHeaders()
 				.getFirst("Authorization");
 
+			if (token == null) {
+				var cookies = exchange.getRequest().getCookies().getFirst("accessToken");
+				if (cookies != null) {
+					token = cookies.getValue();
+				}
+			}
+
 			// 토큰이 없을 경우 401 Unauthorized로 응답
 			if (token == null) {
 				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -32,7 +39,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
 			}
 
 			// Bearer 토큰 시 처리
-			if (token != null && token.startsWith("Bearer ")) {
+			if (token.startsWith("Bearer ")) {
 				token = token.substring(7);
 			}
 
