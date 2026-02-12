@@ -51,7 +51,7 @@ public class AuthService {
 		return new LoginResult(accessToken, refreshToken, user.isFirstLogin());
 	}
 
-	public Pair<String, String> refresh(String refreshToken) {
+	public LoginResult refresh(String refreshToken) {
 		UUID userId;
 		try {
 			userId = jwtService.parseId(refreshToken);
@@ -76,7 +76,7 @@ public class AuthService {
 		long newRefreshTtlMs = newRefreshExp.getTime() - System.currentTimeMillis();
 		refreshTokenService.save(user.getId(), newRefreshToken, newRefreshTtlMs);
 
-		return Pair.of(newAccessToken, newRefreshToken);
+		return new LoginResult(newAccessToken, newRefreshToken, false);
 	}
 
 	public void logout(UUID id, String accessToken) {
