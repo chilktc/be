@@ -12,8 +12,8 @@ public class ErrorResponse {
 	private HttpStatus status;
 	private String message;
 
-	public static ResponseEntity<ErrorData> error(HttpStatus status, String message) {
-		return ResponseEntity.status(status).body(ErrorData.of(status.series().name(), message));
+	public static ResponseEntity<ErrorData> error(ErrorCode errorCode) {
+		return ResponseEntity.status(errorCode.getStatus()).body(ErrorData.of(errorCode.name(), errorCode.getMessage()));
 	}
 
 	@Getter
