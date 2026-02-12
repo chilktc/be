@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -90,23 +91,30 @@ public class GoogleOauthController {
 	@PostMapping("/logout")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> googleLogout(
-		@RequestHeader("X-User-Id") String userId,
-		@RequestHeader("Authorization") String authorization,
+		@CookieValue(value = "accessToken", required = false) String accessToken,
+		@CookieValue(value = "refreshToken", required = false) String refreshToken,
 		HttpServletResponse response
 	) {
-		// Bearer 제거
-		String accessToken = authorization.startsWith("Bearer ")
-			? authorization.substring(7)
-			: authorization;
+		authService.logout(accessToken, refreshToken);
 
-		authService.logout(UUID.fromString(userId), accessToken);
+		response.addHeader(
+			"Set-Cookie",
+			ResponseCookie.from("accessToken", "")
+				.httpOnly(true)
+				.secure(false)       // 배포 시 true
+				.sameSite("Lax")
+				.path("/")
+				.maxAge(0)
+				.build()
+				.toString()
+		);
 
 		// refreshToken 쿠키 만료
 		response.addHeader(
 			"Set-Cookie",
 			ResponseCookie.from("refreshToken", "")
 				.httpOnly(true)
-				.secure(false)
+				.secure(false)    // 배포 시 true
 				.sameSite("Lax")
 				.path("/auth/refresh")
 				.maxAge(0)
