@@ -2,7 +2,6 @@ package be.auth.service;
 
 import java.util.UUID;
 
-import org.springframework.data.util.Pair;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,16 +78,25 @@ public class AuthService {
 		return new LoginResult(newAccessToken, newRefreshToken, false);
 	}
 
-	public void logout(UUID id, String accessToken) {
-		refreshTokenService.delete(id);
+	public void logout(String accessToken, String refreshToken) {
 
 		try {
-			String jti = jwtService.parseJti(accessToken);
-			var exp = jwtService.parseExpiration(accessToken);
+			if (refreshToken != null) {
+				UUID userId = jwtService.parseId(refreshToken);
+				refreshTokenService.delete(userId);
+			}
+		} catch (JwtException | IllegalArgumentException e) {
+		}
 
-			long ttlMs = exp.getTime() - System.currentTimeMillis();
-			if (ttlMs > 0) {
-				accessTokenBlacklistService.save(jti, ttlMs);
+		try {
+			if (accessToken != null) {
+				String jti = jwtService.parseJti(accessToken);
+				var exp = jwtService.parseExpiration(accessToken);
+
+				long ttlMs = exp.getTime() - System.currentTimeMillis();
+				if (ttlMs > 0) {
+					accessTokenBlacklistService.save(jti, ttlMs);
+				}
 			}
 		} catch (JwtException | IllegalArgumentException e) {
 		}
