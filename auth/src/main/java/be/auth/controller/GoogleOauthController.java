@@ -53,6 +53,18 @@ public class GoogleOauthController {
 	) {
 		LoginResult result = googleOauthService.login(request.code());
 
+		response.addHeader(
+			"Set-Cookie",
+			ResponseCookie.from("accessToken", result.accessToken())
+				.httpOnly(true)
+				.secure(false)           // HTTPS 환경에서만
+				.sameSite("Lax")
+				.path("/")
+				.maxAge(Duration.ofMinutes(5))
+				.build()
+				.toString()
+		);
+
 		// Refresh Token을 HttpOnly Cookie로 설정
 		response.addHeader(
 			"Set-Cookie",
