@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import be.auth.dto.LoginResult;
 import be.auth.dto.request.SignUpRequest;
 import be.auth.dto.request.LoginRequest;
 import be.auth.dto.response.LoginResponse;
@@ -46,6 +47,18 @@ public class AuthController {
 	) {
 		var result = authService.login(request.email(), request.password());
 
+		response.addHeader(
+			"Set-Cookie",
+			ResponseCookie.from("accessToken", result.accessToken())
+				.httpOnly(true)
+				.secure(false) // 배포 시 true
+				.sameSite("Lax")
+				.path("/")
+				.maxAge(Duration.ofMinutes(5))
+				.build()
+				.toString()
+		);
+
 		// Refresh Token을 HttpOnly Cookie로 설정
 		response.addHeader(
 			"Set-Cookie",
@@ -60,7 +73,7 @@ public class AuthController {
 				.toString()
 		);
 
-		return ApiResult.ok(new LoginResponse(result.accessToken(), result.firstLogin()));
+		return ApiResult.ok(new LoginResponse(result.firstLogin()));
 	}
 
 
@@ -72,10 +85,36 @@ public class AuthController {
 	@PostMapping("/refresh")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<LoginResponse> refresh(
-		@CookieValue("refreshToken") String refreshToken
+		@CookieValue("refreshToken") String refreshToken,
+		HttpServletResponse response
 	) {
-		var pair = authService.refresh(refreshToken);
-		return ApiResult.ok(new LoginResponse(pair.getFirst(), false));
+		LoginResult result = authService.refresh(refreshToken);
+
+		response.addHeader(
+			"Set-Cookie",
+			ResponseCookie.from("accessToken", result.accessToken())
+				.httpOnly(true)
+				.secure(false)
+				.sameSite("Lax")
+				.path("/")
+				.maxAge(Duration.ofMinutes(5))
+				.build()
+				.toString()
+		);
+
+		response.addHeader(
+			"Set-Cookie",
+			ResponseCookie.from("refreshToken", result.refreshToken())
+				.httpOnly(true)
+				.secure(false)
+				.sameSite("Lax")
+				.path("/auth/refresh")
+				.maxAge(Duration.ofDays(14))
+				.build()
+				.toString()
+		);
+
+		return ApiResult.ok(new LoginResponse(false));
 	}
 
 	@Operation(summary = "회원가입", description = "회원 가입 API입니다.")
