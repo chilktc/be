@@ -23,6 +23,13 @@ spring:
               uri: http://${AUTH_SERVER_HOST:localhost}:${AUTH_SERVER_PORT:8081}
               predicates:
                 - Path=/auth/**
+            - id: greenroom
+              uri: http://${GREENROOM_SERVER_HOST:localhost}:${GREENROOM_SERVER_PORT:8082}
+              predicates:
+                - Path=/greenroom/**
+              filters:
+                - JwtAuthenticationFilter
+
 
 jwt:
   secret: ${kt.jwt.secret:kt-cloud-tech-up-final-project-2026020201010101}
