@@ -13,17 +13,17 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: auth-db
+    container_name: db
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: auth
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: auth
       MYSQL_PASSWORD: auth
       TZ: Asia/Seoul
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
     restart: unless-stopped
 
 volumes:
