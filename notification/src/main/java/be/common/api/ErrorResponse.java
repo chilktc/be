@@ -1,0 +1,29 @@
+package be.common.api;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class ErrorResponse {
+	private HttpStatus status;
+	private String message;
+
+	public static ResponseEntity<ErrorData> error(ErrorCode errorCode) {
+		return ResponseEntity.status(errorCode.getStatus()).body(ErrorData.of(errorCode.name(), errorCode.getMessage()));
+	}
+
+	@Getter
+	@AllArgsConstructor
+	public static class ErrorData {
+		private String code;
+		private String message;
+
+		public static ErrorData of(String code, String message) {
+			return new ErrorData(code, message);
+		}
+	}
+}
