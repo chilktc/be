@@ -1,0 +1,7 @@
+package be.greenroom.notification.event;
+
+public enum GreenroomEventType {
+	GREENROOM_SESSION_COMPLETED,
+	GREENROOM_NOTIFICATION_PREFERENCE_UPDATED,
+	GREENROOM_DIFFICULTY_RESOLVED
+}
