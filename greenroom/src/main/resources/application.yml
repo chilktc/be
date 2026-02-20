@@ -16,3 +16,12 @@ spring:
       ddl-auto: update
     show-sql: true
     open-in-view: false
+
+  kafka:
+    bootstrap-servers: ${kafka.servers:localhost:29092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        linger.bs: 0
+        spring.json.trusted.packages: "*"
