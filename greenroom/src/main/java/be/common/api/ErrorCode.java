@@ -9,7 +9,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ErrorCode {
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에러입니다. 백엔드팀에 문의하세요."),
-	VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.")
+	VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+	NOTIFICATION_EVENT_SERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "알림 이벤트 직렬화에 실패했습니다.")
 	,;
 	private final HttpStatus status;
 	private final String message;
