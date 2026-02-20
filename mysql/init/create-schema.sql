@@ -1,9 +1,11 @@
 CREATE DATABASE IF NOT EXISTS auth CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS greenroom CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS orderdb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS notification CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 GRANT ALL PRIVILEGES ON auth.* TO 'auth'@'%';
 GRANT ALL PRIVILEGES ON greenroom.* TO 'auth'@'%';
 GRANT ALL PRIVILEGES ON orderdb.* TO 'auth'@'%';
+GRANT ALL PRIVILEGES ON notification.* TO 'auth'@'%';
 
 FLUSH PRIVILEGES;
