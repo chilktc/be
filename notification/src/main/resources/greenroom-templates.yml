@@ -1,0 +1,18 @@
+greenroom:
+  templates:
+    GR_CHECK_IMMEDIATE:
+      subject: "그린룸 직후 체크"
+      body: "방금 겪은 어려움이 해결됐는지 확인해 주세요."
+      ctaText: "트래킹 보러가기"
+    GR_CHECK_DAY3:
+      subject: "그린룸 3일 후 체크"
+      body: "3일이 지났습니다. 어려움 해결 여부를 알려주세요."
+      ctaText: "트래킹 보러가기"
+    GR_CHECK_DAY7:
+      subject: "그린룸 7일 후 체크"
+      body: "일주일이 지났습니다. 현재 상태를 업데이트해 주세요."
+      ctaText: "트래킹 보러가기"
+    GR_CHECK_BIWEEKLY:
+      subject: "그린룸 2주 체크"
+      body: "어려움이 해결될 때까지 2주 간격으로 상태를 확인합니다."
+      ctaText: "트래킹 보러가기"
