@@ -55,4 +55,13 @@ public class TicketController {
         UUID userId = UUID.fromString(userIdHeader);
         return ApiResult.ok(ticketService.getMyTicketPreviews(userId));
     }
+
+	@Operation(summary = "그린룸 입장권 단건 조회", description = "ticketId로 그린룸 입장권 단건을 조회합니다.")
+	@GetMapping("/{ticketId}")
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResult<TicketResponse> getTicket(
+		@PathVariable UUID ticketId
+	) {
+		return ApiResult.ok(ticketService.getTicket(ticketId));
+	}
 }
