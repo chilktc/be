@@ -10,6 +10,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -36,6 +38,12 @@ public class User {
 	@Column(nullable = false, unique = true)
 	private String email;
 
+	@Column
+	private String nickname;
+
+	@Column
+	private String image;
+
 	@Enumerated(EnumType.STRING)
 	private OauthProvider provider;
 
@@ -59,6 +67,8 @@ public class User {
 	private User(
 		UUID id,
 		String email,
+		String nickname,
+		String image,
 		OauthProvider provider,
 		String providerUserId,
 		String password,
@@ -68,6 +78,8 @@ public class User {
 	) {
 		this.id = id;
 		this.email = email;
+		this.nickname = nickname;
+		this.image = image;
 		this.provider = provider;
 		this.providerUserId = providerUserId;
 		this.password = password;
@@ -87,15 +99,35 @@ public class User {
 			null,
 			null,
 			null,
+			null,
+			null,
 			role,
 			true,
 			true
 		);
 	}
 
-	public void bindGoogleOAuth(String googleSub) {
+	public void bindGoogleOAuth(String googleSub, String googleName) {
+		Preconditions.validate(
+			googleName != null && !googleName.isBlank(),
+			ErrorCode.INVALID_NICKNAME
+		);
+
 		this.provider = OauthProvider.GOOGLE;
 		this.providerUserId = googleSub;
+
+		if (this.nickname == null) {
+			this.nickname = googleName;
+		}
+	}
+
+	@PrePersist
+	@PreUpdate
+	private void validateState() {
+		if (this.providerUserId != null &&
+			(this.nickname == null || this.nickname.isBlank())) {
+			throw new IllegalStateException("Logged-in user must have nickname.");
+		}
 	}
 
 
@@ -109,6 +141,8 @@ public class User {
 		return new User(
 			id,
 			email,
+			email,  // 서버 가입 유저는 이메일을 닉네임으로 사용
+			null,
 			OauthProvider.SERVER,
 			email,
 			encodedPassword,
@@ -121,5 +155,15 @@ public class User {
 	//TODO: 어드민 조직원 초대 API
 	public void completeFirstLogin() {
 		this.firstLogin = false;
+	}
+
+
+	public void changeNickname(String nickname) {
+		Preconditions.validate(nickname != null && !nickname.isBlank(), ErrorCode.INVALID_NICKNAME);
+		this.nickname = nickname;
+	}
+
+	public void changeImage(String image) {
+		this.image = image;
 	}
 }

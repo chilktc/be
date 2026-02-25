@@ -69,12 +69,13 @@ public class GoogleOauthService {
 
 		String email = userInfo.email();
 		String googleSub = userInfo.sub();
+		String googleName = userInfo.name();
 
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.OAUTH_EMAIL_NOT_REGISTERED));
 
 		if (user.getProvider() == null) {
-			user.bindGoogleOAuth(googleSub);
+			user.bindGoogleOAuth(googleSub, googleName);
 		}
 		else if (user.getProvider() == OauthProvider.GOOGLE) {
 			Preconditions.validate(
