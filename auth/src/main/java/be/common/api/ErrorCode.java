@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에러입니다. 백엔드팀에 문의하세요."),
 	VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
-	NOT_FOUND_USER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
+	NOT_FOUND_USER(HttpStatus.BAD_REQUEST, "존재하지 않는 회원입니다."),
 	EXIST_LOGINID(HttpStatus.CONFLICT, "이미 존재하는 아이디입니다."),
 	EXIST_USER(HttpStatus.CONFLICT, "이미 존재하는 회원입니다."),
 	FAIL_LOGIN(HttpStatus.UNAUTHORIZED, "아이디 혹은 비밀번호가 일치하지 않습니다."),

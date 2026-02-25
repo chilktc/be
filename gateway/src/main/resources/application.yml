@@ -12,17 +12,39 @@ spring:
       server:
         webflux:
           routes:
-            # /auth로 시작하는 모든 경로의 요청은 auth-service(localhost:8081)으로 전달
+            - id: auth-api-docs
+              uri: http://${AUTH_SERVER_HOST:localhost}:${AUTH_SERVER_PORT:8081}
+              predicates:
+                - Path=/v3/api-docs/auth
+              filters:
+                - RewritePath=/v3/api-docs/auth, /v3/api-docs
+
+            - id: greenroom-api-docs
+              uri: http://${GREENROOM_SERVER_HOST:localhost}:${GREENROOM_SERVER_PORT:8082}
+              predicates:
+                - Path=/v3/api-docs/greenroom
+              filters:
+                - RewritePath=/v3/api-docs/greenroom, /v3/api-docs
+
+            - id: notification-api-docs
+              uri: http://${NOTIFICATION_SERVER_HOST:localhost}:${NOTIFICATION_SERVER_PORT:8083}
+              predicates:
+                - Path=/v3/api-docs/notification
+              filters:
+                - RewritePath=/v3/api-docs/notification, /v3/api-docs
+
             - id: auth-jwt
               uri: http://${AUTH_SERVER_HOST:localhost}:${AUTH_SERVER_PORT:8081}
               predicates:
                 - Path=/auth/logout
               filters:
                 - JwtAuthenticationFilter
+
             - id: auth
               uri: http://${AUTH_SERVER_HOST:localhost}:${AUTH_SERVER_PORT:8081}
               predicates:
                 - Path=/auth/**
+
             - id: greenroom
               uri: http://${GREENROOM_SERVER_HOST:localhost}:${GREENROOM_SERVER_PORT:8082}
               predicates:
@@ -30,8 +52,20 @@ spring:
               filters:
                 - JwtAuthenticationFilter
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: auth
+        url: /v3/api-docs/auth
+      - name: greenroom
+        url: /v3/api-docs/greenroom
+      - name: notification
+        url: /v3/api-docs/notification
+  api-docs:
+    enabled: true
 
 jwt:
   secret: ${kt.jwt.secret:kt-cloud-tech-up-final-project-2026020201010101}
-  access-token-expiration: ${kt.jwt.access-token-expiration:300000} #5
-  refresh-token-expiration: ${kt.jwt.refresh-token-expiration:43200000} #12
+  access-token-expiration: ${kt.jwt.access-token-expiration:300000}
+  refresh-token-expiration: ${kt.jwt.refresh-token-expiration:43200000}
