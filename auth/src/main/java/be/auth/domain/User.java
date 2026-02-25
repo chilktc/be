@@ -36,6 +36,12 @@ public class User {
 	@Column(nullable = false, unique = true)
 	private String email;
 
+	@Column(nullable = false)
+	private String nickname;
+
+	@Column
+	private String image;
+
 	@Enumerated(EnumType.STRING)
 	private OauthProvider provider;
 
@@ -59,6 +65,8 @@ public class User {
 	private User(
 		UUID id,
 		String email,
+		String nickname,
+		String image,
 		OauthProvider provider,
 		String providerUserId,
 		String password,
@@ -68,6 +76,8 @@ public class User {
 	) {
 		this.id = id;
 		this.email = email;
+		this.nickname = nickname;
+		this.image = image;
 		this.provider = provider;
 		this.providerUserId = providerUserId;
 		this.password = password;
@@ -84,6 +94,8 @@ public class User {
 		return new User(
 			id,
 			email,
+			null,
+			null,
 			null,
 			null,
 			null,
@@ -109,6 +121,8 @@ public class User {
 		return new User(
 			id,
 			email,
+			email,  // 서버 가입 유저는 이메일을 닉네임으로 사용
+			null,
 			OauthProvider.SERVER,
 			email,
 			encodedPassword,
