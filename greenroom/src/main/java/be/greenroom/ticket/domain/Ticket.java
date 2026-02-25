@@ -23,6 +23,9 @@ public class Ticket {
     @Column(nullable = false)
     private UUID userId;
 
+	@Column
+	private String name;
+
     @Column(nullable = false)
     private String situation;
 
@@ -32,14 +35,16 @@ public class Ticket {
     @Column(nullable = false)
     private String action;
 
+
     @Column
     private String colleagueReaction;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    private Ticket(UUID userId, String situation, String thought, String action, String colleagueReaction) {
+    private Ticket(UUID userId, String name, String situation, String thought, String action, String colleagueReaction) {
 		this.id = UUID.randomUUID();
+		this.name = name;
         this.userId = userId;
         this.situation = situation;
         this.thought = thought;
@@ -47,9 +52,13 @@ public class Ticket {
         this.colleagueReaction = colleagueReaction;
     }
 
-    public static Ticket create(UUID userId, String situation, String thought, String action, String colleagueReaction) {
-        return new Ticket(userId, situation, thought, action, colleagueReaction);
+    public static Ticket create(UUID userId, String name, String situation, String thought, String action, String colleagueReaction) {
+        return new Ticket(userId, name, situation, thought, action, colleagueReaction);
     }
+
+	public void changeName(String name){
+		this.name = name;
+	}
 
     @PrePersist
     public void prePersist() {

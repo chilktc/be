@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import be.common.api.ApiResult;
 import be.greenroom.ticket.dto.request.CreateTicketRequest;
+import be.greenroom.ticket.dto.response.TicketPreviewResponse;
 import be.greenroom.ticket.dto.response.TicketResponse;
 import be.greenroom.ticket.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,13 +46,22 @@ public class TicketController {
     }
 
 	// TODO : 페이징 필요시 추가
-	@Operation(summary = "그린룸 입장권 조회", description = "본인의 그린룸 입장권을 조회합니다.")
+	@Operation(summary = "그린룸 입장권 이름 조회", description = "본인의 그린룸 입장권 이름과 시간을 조회합니다.")
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResult<List<TicketResponse>> getMyTickets(
+    public ApiResult<List<TicketPreviewResponse>> getMyTickets(
         @RequestHeader("X-User-Id") @NotBlank String userIdHeader
     ) {
         UUID userId = UUID.fromString(userIdHeader);
-        return ApiResult.ok(ticketService.getMyTickets(userId));
+        return ApiResult.ok(ticketService.getMyTicketPreviews(userId));
     }
+
+	@Operation(summary = "그린룸 입장권 단건 조회", description = "ticketId로 그린룸 입장권 단건을 조회합니다.")
+	@GetMapping("/{ticketId}")
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResult<TicketResponse> getTicket(
+		@PathVariable UUID ticketId
+	) {
+		return ApiResult.ok(ticketService.getTicket(ticketId));
+	}
 }
