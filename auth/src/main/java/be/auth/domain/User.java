@@ -10,6 +10,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -36,7 +38,7 @@ public class User {
 	@Column(nullable = false, unique = true)
 	private String email;
 
-	@Column(nullable = false)
+	@Column
 	private String nickname;
 
 	@Column
@@ -106,11 +108,25 @@ public class User {
 	}
 
 	public void bindGoogleOAuth(String googleSub, String googleName) {
+		Preconditions.validate(
+			googleName != null && !googleName.isBlank(),
+			ErrorCode.INVALID_NICKNAME
+		);
+
 		this.provider = OauthProvider.GOOGLE;
 		this.providerUserId = googleSub;
 
 		if (this.nickname == null) {
 			this.nickname = googleName;
+		}
+	}
+
+	@PrePersist
+	@PreUpdate
+	private void validateState() {
+		if (this.providerUserId != null &&
+			(this.nickname == null || this.nickname.isBlank())) {
+			throw new IllegalStateException("Logged-in user must have nickname.");
 		}
 	}
 
