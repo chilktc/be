@@ -48,4 +48,11 @@ public class TicketService {
 			))
 			.toList();
     }
+
+	@Transactional(readOnly = true)
+	public TicketResponse getTicket(UUID ticketId){
+		Ticket ticket = ticketRepository.findById(ticketId)
+			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
+		return TicketResponse.from(ticket);
+	}
 }
