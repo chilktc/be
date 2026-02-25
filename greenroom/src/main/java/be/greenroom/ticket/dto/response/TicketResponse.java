@@ -8,6 +8,7 @@ import be.greenroom.ticket.domain.Ticket;
 public record TicketResponse(
     UUID id,
     UUID userId,
+	String name,
     String situation,
     String thought,
     String action,
@@ -18,6 +19,7 @@ public record TicketResponse(
         return new TicketResponse(
             ticket.getId(),
             ticket.getUserId(),
+			ticket.getName(),
             ticket.getSituation(),
             ticket.getThought(),
             ticket.getAction(),
