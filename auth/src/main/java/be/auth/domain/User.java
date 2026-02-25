@@ -105,9 +105,13 @@ public class User {
 		);
 	}
 
-	public void bindGoogleOAuth(String googleSub) {
+	public void bindGoogleOAuth(String googleSub, String googleName) {
 		this.provider = OauthProvider.GOOGLE;
 		this.providerUserId = googleSub;
+
+		if (this.nickname == null) {
+			this.nickname = googleName;
+		}
 	}
 
 
