@@ -136,4 +136,14 @@ public class User {
 	public void completeFirstLogin() {
 		this.firstLogin = false;
 	}
+
+
+	public void changeNickname(String nickname) {
+		Preconditions.validate(nickname != null && !nickname.isBlank(), ErrorCode.INVALID_NICKNAME);
+		this.nickname = nickname;
+	}
+
+	public void changeImage(String image) {
+		this.image = image;
+	}
 }

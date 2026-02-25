@@ -23,7 +23,8 @@ public enum ErrorCode {
 	OAUTH_TOKEN_EXCHANGE_FAILED(HttpStatus.UNAUTHORIZED, "OAuth 토큰 교환에 실패했습니다."),
 	OAUTH_USERINFO_FAILED(HttpStatus.UNAUTHORIZED, "OAuth 사용자 정보를 가져오지 못했습니다."),
 	OAUTH_EMAIL_NOT_REGISTERED(HttpStatus.FORBIDDEN, "이메일로 등록된 사용자가 없습니다."),
-	OAUTH_PROVIDER_MISMATCH(HttpStatus.FORBIDDEN, "OAuth 제공자 정보가 일치하지 않습니다.")
+	OAUTH_PROVIDER_MISMATCH(HttpStatus.FORBIDDEN, "OAuth 제공자 정보가 일치하지 않습니다."),
+	INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "닉네임을 입력하세요.")
 	,;
 	private final HttpStatus status;
 	private final String message;
