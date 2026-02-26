@@ -22,6 +22,7 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class SwaggerConfiguration {
@@ -45,6 +46,7 @@ public class SwaggerConfiguration {
 
 		return new OpenAPI()
 			.info(info)
+			.servers(List.of(new Server().url("/")))
 			.components(new Components().addSecuritySchemes("Access Token", accessTokenScheme))
 			.addSecurityItem(securityRequirement);
 	}
