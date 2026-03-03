@@ -87,4 +87,29 @@ class GreenroomNotificationScheduleServiceTest {
 		verify(processedEventRepository).save(processedCaptor.capture());
 		assertThat(processedCaptor.getValue().getEventId()).isEqualTo(eventId);
 	}
+
+	@Test
+	@DisplayName("세션 완료 이벤트가 중복이면 아무 작업도 수행하지 않는다")
+	void handleSessionCompleted_returnsImmediately_whenDuplicateEvent() {
+		UUID eventId = UUID.randomUUID();
+		GreenroomSessionCompletedEvent event = new GreenroomSessionCompletedEvent(
+			eventId,
+			"GREENROOM_SESSION_COMPLETED",
+			Instant.now(),
+			UUID.randomUUID(),
+			UUID.randomUUID(),
+			"Asia/Seoul",
+			19,
+			0
+		);
+
+		when(processedEventRepository.existsById(eventId)).thenReturn(true);
+
+		scheduleService.handleSessionCompleted(event);
+
+		verify(scheduleRepository, never()).findByTicketId(any());
+		verify(scheduleRepository, never()).save(any());
+		verify(processedEventRepository, never()).save(any());
+	}
+
 }
