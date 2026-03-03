@@ -56,9 +56,6 @@ public class GreenroomNotificationHistory {
 	@Column(nullable = false)
 	private SendResult result;
 
-	@Column(name = "error_code")
-	private String errorCode;
-
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
@@ -87,8 +84,7 @@ public class GreenroomNotificationHistory {
 		NotificationChannel channel,
 		GreenroomTemplateCode templateCode,
 		String idempotencyKey,
-		Instant sentAt,
-		String errorCode
+		Instant sentAt
 	) {
 		GreenroomNotificationHistory history = success(
 			scheduleId,
@@ -99,7 +95,6 @@ public class GreenroomNotificationHistory {
 			sentAt
 		);
 		history.result = SendResult.FAIL;
-		history.errorCode = errorCode;
 		return history;
 	}
 
