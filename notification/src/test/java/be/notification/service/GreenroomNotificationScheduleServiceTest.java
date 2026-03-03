@@ -112,4 +112,37 @@ class GreenroomNotificationScheduleServiceTest {
 		verify(processedEventRepository, never()).save(any());
 	}
 
+	@Test
+	@DisplayName("세션 완료 이벤트에 선호 시간이 비어있으면 기본값(19:00, Asia/Seoul)을 사용한다")
+	void handleSessionCompleted_usesDefaultPreference_whenEventPreferenceIsNull() {
+		UUID eventId = UUID.randomUUID();
+		UUID userId = UUID.randomUUID();
+		UUID ticketId = UUID.randomUUID();
+
+		GreenroomSessionCompletedEvent event = new GreenroomSessionCompletedEvent(
+			eventId,
+			"GREENROOM_SESSION_COMPLETED",
+			Instant.parse("2026-03-01T08:00:00Z"),
+			userId,
+			ticketId,
+			null,
+			null,
+			null
+		);
+
+		when(processedEventRepository.existsById(eventId)).thenReturn(false);
+		when(scheduleRepository.findByTicketId(ticketId)).thenReturn(Optional.empty());
+
+		scheduleService.handleSessionCompleted(event);
+
+		ArgumentCaptor<GreenroomNotificationSchedule> scheduleCaptor =
+			ArgumentCaptor.forClass(GreenroomNotificationSchedule.class);
+		verify(scheduleRepository).save(scheduleCaptor.capture());
+		GreenroomNotificationSchedule saved = scheduleCaptor.getValue();
+
+		assertThat(saved.getPreferredHour()).isEqualTo(19);
+		assertThat(saved.getPreferredMinute()).isEqualTo(0);
+		assertThat(saved.getTimezone()).isEqualTo("Asia/Seoul");
+		verify(processedEventRepository).save(any(ProcessedEvent.class));
+	}
 }
