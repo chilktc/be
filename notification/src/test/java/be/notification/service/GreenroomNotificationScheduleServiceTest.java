@@ -145,4 +145,44 @@ class GreenroomNotificationScheduleServiceTest {
 		assertThat(saved.getTimezone()).isEqualTo("Asia/Seoul");
 		verify(processedEventRepository).save(any(ProcessedEvent.class));
 	}
+
+	@Test
+	@DisplayName("선호 시간 변경 이벤트가 오면 기존 스케줄의 선호값을 갱신한다")
+	void handlePreferenceUpdated_updatesExistingScheduleAndRecordsProcessedEvent() {
+		UUID eventId = UUID.randomUUID();
+		UUID userId = UUID.randomUUID();
+		UUID ticketId = UUID.randomUUID();
+
+		GreenroomNotificationSchedule schedule = GreenroomNotificationSchedule.create(
+			userId,
+			ticketId,
+			Instant.parse("2026-03-01T08:00:00Z"),
+			19,
+			0,
+			"Asia/Seoul"
+		);
+
+		GreenroomNotificationPreferenceUpdatedEvent event = new GreenroomNotificationPreferenceUpdatedEvent(
+			eventId,
+			"GREENROOM_NOTIFICATION_PREFERENCE_UPDATED",
+			Instant.parse("2026-03-01T09:00:00Z"),
+			userId,
+			ticketId,
+			22,
+			15,
+			"Asia/Seoul"
+		);
+
+		when(processedEventRepository.existsById(eventId)).thenReturn(false);
+		when(scheduleRepository.findByTicketId(ticketId)).thenReturn(Optional.of(schedule));
+
+		scheduleService.handlePreferenceUpdated(event);
+
+		verify(scheduleRepository).save(schedule);
+		verify(processedEventRepository).save(any(ProcessedEvent.class));
+
+		assertThat(schedule.getPreferredHour()).isEqualTo(22);
+		assertThat(schedule.getPreferredMinute()).isEqualTo(15);
+		assertThat(schedule.getTimezone()).isEqualTo("Asia/Seoul");
+	}
 }
