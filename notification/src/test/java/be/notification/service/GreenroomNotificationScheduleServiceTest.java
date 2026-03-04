@@ -45,7 +45,8 @@ class GreenroomNotificationScheduleServiceTest {
 
 	@Test
 	@DisplayName("세션 완료 이벤트 수신 시 스케줄을 생성한다")
-	void handleSessionCompleted_createsSchedule() {
+	void 세션완료_이벤트_수신시__스케줄_생성() {
+		// given
 		UUID userId = UUID.randomUUID();
 		UUID ticketId = UUID.randomUUID();
 
@@ -59,8 +60,10 @@ class GreenroomNotificationScheduleServiceTest {
 			"Asia/Seoul"
 		);
 
+		// when
 		scheduleService.handleSessionCompleted(event);
 
+		// then
 		ArgumentCaptor<GreenroomNotificationSchedule> captor = ArgumentCaptor.forClass(GreenroomNotificationSchedule.class);
 		verify(scheduleRepository).save(captor.capture());
 		GreenroomNotificationSchedule saved = captor.getValue();
@@ -76,7 +79,8 @@ class GreenroomNotificationScheduleServiceTest {
 
 	@Test
 	@DisplayName("세션 완료 이벤트 선호값이 null이면 기본값(19:00, Asia/Seoul)을 사용한다")
-	void handleSessionCompleted_usesDefaultPreferenceWhenNull() {
+	void 세션완료_이벤트_선호값이_null이면__기본값_적용() {
+		// given
 		GreenroomSessionCompletedEvent event = new GreenroomSessionCompletedEvent(
 			UUID.randomUUID(),
 			Instant.parse("2026-03-01T08:00:00Z"),
@@ -87,8 +91,10 @@ class GreenroomNotificationScheduleServiceTest {
 			null
 		);
 
+		// when
 		scheduleService.handleSessionCompleted(event);
 
+		// then
 		ArgumentCaptor<GreenroomNotificationSchedule> captor = ArgumentCaptor.forClass(GreenroomNotificationSchedule.class);
 		verify(scheduleRepository).save(captor.capture());
 		GreenroomNotificationSchedule saved = captor.getValue();
@@ -100,7 +106,8 @@ class GreenroomNotificationScheduleServiceTest {
 
 	@Test
 	@DisplayName("완료 전 선호시간 변경 요청은 GREENROOM_SESSION_NOT_COMPLETED를 던진다")
-	void handlePreferenceUpdated_throwsNotCompletedWhenScheduleMissing() {
+	void 완료전_선호시간_변경요청시__미완료_예외_발생() {
+		// given
 		UUID ticketId = UUID.randomUUID();
 		GreenroomNotificationPreferenceUpdatedEvent event = new GreenroomNotificationPreferenceUpdatedEvent(
 			UUID.randomUUID(),
@@ -113,6 +120,7 @@ class GreenroomNotificationScheduleServiceTest {
 
 		when(scheduleRepository.findByTicketId(ticketId)).thenReturn(Optional.empty());
 
+		// when & then
 		assertThatThrownBy(() -> scheduleService.handlePreferenceUpdated(event))
 			.isInstanceOf(CustomException.class)
 			.extracting(e -> ((CustomException) e).getErrorCode())
@@ -121,7 +129,8 @@ class GreenroomNotificationScheduleServiceTest {
 
 	@Test
 	@DisplayName("선호시간 변경 이벤트는 스케줄 값을 갱신한다")
-	void handlePreferenceUpdated_updatesExistingSchedule() {
+	void 선호시간_변경_이벤트_수신시__스케줄_값_갱신() {
+		// given
 		UUID userId = UUID.randomUUID();
 		UUID ticketId = UUID.randomUUID();
 		GreenroomNotificationSchedule schedule = GreenroomNotificationSchedule.create(
@@ -144,8 +153,10 @@ class GreenroomNotificationScheduleServiceTest {
 
 		when(scheduleRepository.findByTicketId(ticketId)).thenReturn(Optional.of(schedule));
 
+		// when
 		scheduleService.handlePreferenceUpdated(event);
 
+		// then
 		verify(scheduleRepository).save(schedule);
 		assertThat(schedule.getPreferredHour()).isEqualTo(22);
 		assertThat(schedule.getPreferredMinute()).isEqualTo(15);
@@ -153,7 +164,8 @@ class GreenroomNotificationScheduleServiceTest {
 
 	@Test
 	@DisplayName("완료 전 해결 요청은 GREENROOM_SESSION_NOT_COMPLETED를 던진다")
-	void handleResolved_throwsNotCompletedWhenScheduleMissing() {
+	void 완료전_해결요청시__미완료_예외_발생() {
+		// given
 		UUID ticketId = UUID.randomUUID();
 		GreenroomDifficultyResolvedEvent event = new GreenroomDifficultyResolvedEvent(
 			UUID.randomUUID(),
@@ -163,6 +175,7 @@ class GreenroomNotificationScheduleServiceTest {
 
 		when(scheduleRepository.findByTicketId(ticketId)).thenReturn(Optional.empty());
 
+		// when & then
 		assertThatThrownBy(() -> scheduleService.handleResolved(event))
 			.isInstanceOf(CustomException.class)
 			.extracting(e -> ((CustomException) e).getErrorCode())
@@ -171,7 +184,8 @@ class GreenroomNotificationScheduleServiceTest {
 
 	@Test
 	@DisplayName("해결 이벤트는 스케줄을 RESOLVED 상태로 변경한다")
-	void handleResolved_marksScheduleResolved() {
+	void 해결_이벤트_수신시__스케줄_RESOLVED_변경() {
+		// given
 		UUID ticketId = UUID.randomUUID();
 		GreenroomNotificationSchedule schedule = GreenroomNotificationSchedule.create(
 			UUID.randomUUID(),
@@ -190,8 +204,10 @@ class GreenroomNotificationScheduleServiceTest {
 
 		when(scheduleRepository.findByTicketId(ticketId)).thenReturn(Optional.of(schedule));
 
+		// when
 		scheduleService.handleResolved(event);
 
+		// then
 		verify(scheduleRepository).save(schedule);
 		assertThat(schedule.getStatus()).isEqualTo(NotificationScheduleStatus.RESOLVED);
 		assertThat(schedule.getResolvedAt()).isEqualTo(Instant.parse("2026-03-02T08:00:00Z"));
@@ -199,7 +215,8 @@ class GreenroomNotificationScheduleServiceTest {
 
 	@Test
 	@DisplayName("due 스케줄은 이메일 전송 후 nextSequence를 증가시킨다")
-	void sendDueSchedules_sendsDueSchedulesAndAdvancesSequence() {
+	void 듀_스케줄_처리시__이메일전송후_다음시퀀스_증가() {
+		// given
 		GreenroomNotificationSchedule due = GreenroomNotificationSchedule.create(
 			UUID.randomUUID(),
 			UUID.randomUUID(),
@@ -214,8 +231,10 @@ class GreenroomNotificationScheduleServiceTest {
 		when(scheduleRepository.findByStatusAndNextSendAtBetween(eq(NotificationScheduleStatus.ACTIVE), any(), any()))
 			.thenReturn(List.of(due));
 
+		// when
 		scheduleService.sendDueSchedules();
 
+		// then
 		verify(dispatchService).sendEmail(due);
 		verify(scheduleRepository).save(due);
 		assertThat(due.getNextSequence()).isEqualTo(2);
@@ -224,7 +243,8 @@ class GreenroomNotificationScheduleServiceTest {
 
 	@Test
 	@DisplayName("overdue 스케줄은 실패 처리 후 nextSequence를 증가시킨다")
-	void sendDueSchedules_marksOverdueAsFailedAndAdvancesSequence() {
+	void 오버듀_스케줄_처리시__실패처리후_다음시퀀스_증가() {
+		// given
 		GreenroomNotificationSchedule overdue = GreenroomNotificationSchedule.create(
 			UUID.randomUUID(),
 			UUID.randomUUID(),
@@ -239,8 +259,10 @@ class GreenroomNotificationScheduleServiceTest {
 		when(scheduleRepository.findByStatusAndNextSendAtBetween(eq(NotificationScheduleStatus.ACTIVE), any(), any()))
 			.thenReturn(List.of());
 
+		// when
 		scheduleService.sendDueSchedules();
 
+		// then
 		verify(dispatchService).markEmailFailedIfUnsent(overdue, "MISSED_AFTER_3_MIN");
 		verify(scheduleRepository).save(overdue);
 		assertThat(overdue.getNextSequence()).isEqualTo(2);
@@ -248,14 +270,17 @@ class GreenroomNotificationScheduleServiceTest {
 
 	@Test
 	@DisplayName("처리 대상이 없으면 dispatch 서비스와 상호작용하지 않는다")
-	void sendDueSchedules_doesNothingWhenNoDueAndNoOverdue() {
+	void 처리대상_없으면__디스패치_호출없음() {
+		// given
 		when(scheduleRepository.findByStatusAndNextSendAtBefore(eq(NotificationScheduleStatus.ACTIVE), any()))
 			.thenReturn(List.of());
 		when(scheduleRepository.findByStatusAndNextSendAtBetween(eq(NotificationScheduleStatus.ACTIVE), any(), any()))
 			.thenReturn(List.of());
 
+		// when
 		scheduleService.sendDueSchedules();
 
+		// then
 		verifyNoInteractions(dispatchService);
 	}
 }

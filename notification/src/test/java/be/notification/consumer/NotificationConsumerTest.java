@@ -32,7 +32,8 @@ class NotificationConsumerTest {
 
 	@Test
 	@DisplayName("session-completed 토픽 메시지는 handleSessionCompleted로 전달된다")
-	void consumeSessionCompleted_routesToService() {
+	void 세션완료_토픽수신시__세션완료_핸들러_호출() {
+		// given
 		String payload = """
 			{
 			  \"eventId\": \"11111111-1111-1111-1111-111111111111\",
@@ -45,14 +46,17 @@ class NotificationConsumerTest {
 			}
 			""";
 
+		// when
 		consumer.consumeSessionCompleted(payload);
 
+		// then
 		verify(scheduleService).handleSessionCompleted(org.mockito.ArgumentMatchers.any(GreenroomSessionCompletedEvent.class));
 	}
 
 	@Test
 	@DisplayName("preference-updated 토픽 메시지는 handlePreferenceUpdated로 전달된다")
-	void consumePreferenceUpdated_routesToService() {
+	void 선호시간변경_토픽수신시__선호시간변경_핸들러_호출() {
+		// given
 		String payload = """
 			{
 			  \"eventId\": \"11111111-1111-1111-1111-111111111111\",
@@ -64,14 +68,17 @@ class NotificationConsumerTest {
 			}
 			""";
 
+		// when
 		consumer.consumePreferenceUpdated(payload);
 
+		// then
 		verify(scheduleService).handlePreferenceUpdated(org.mockito.ArgumentMatchers.any(GreenroomNotificationPreferenceUpdatedEvent.class));
 	}
 
 	@Test
 	@DisplayName("difficulty-resolved 토픽 메시지는 handleResolved로 전달된다")
-	void consumeDifficultyResolved_routesToService() {
+	void 해결완료_토픽수신시__해결완료_핸들러_호출() {
+		// given
 		String payload = """
 			{
 			  \"eventId\": \"11111111-1111-1111-1111-111111111111\",
@@ -80,8 +87,10 @@ class NotificationConsumerTest {
 			}
 			""";
 
+		// when
 		consumer.consumeDifficultyResolved(payload);
 
+		// then
 		verify(scheduleService).handleResolved(org.mockito.ArgumentMatchers.any(GreenroomDifficultyResolvedEvent.class));
 	}
 }

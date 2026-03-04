@@ -59,7 +59,8 @@ class GreenroomNotificationScheduleServiceIntegrationTest {
 
 	@Test
 	@DisplayName("DB 기준으로 -5,-3,-2,-1,0,1,2,3,5분 오프셋이 overdue/due/미대상으로 정확히 처리된다")
-	void sendDueSchedules_offsetBoundaryScenario() {
+	void 오프셋_경계값별_스케줄_처리결과_검증() {
+		// given
 		Instant fixedNow = Instant.parse("2026-03-03T12:00:00Z");
 
 		Map<Integer, GreenroomNotificationSchedule> scheduleByOffset = new LinkedHashMap<>();
@@ -69,6 +70,7 @@ class GreenroomNotificationScheduleServiceIntegrationTest {
 			scheduleByOffset.put(offset, schedule);
 		}
 
+		// when
 		try (MockedStatic<Instant> mockedInstant = Mockito.mockStatic(Instant.class, Mockito.CALLS_REAL_METHODS)) {
 			mockedInstant.when(Instant::now).thenReturn(fixedNow);
 
@@ -82,6 +84,7 @@ class GreenroomNotificationScheduleServiceIntegrationTest {
 				h -> h
 			));
 
+		// then
 		// -5분: overdue -> FAIL + errorCode
 		assertHistoryResult(historyByScheduleId, scheduleByOffset.get(-5), SendResult.FAIL, "MISSED_AFTER_3_MIN");
 

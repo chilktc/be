@@ -7,7 +7,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 class NotificationApplicationTests {
 
 	@Test
-	void contextLoads() {
+	void 애플리케이션_컨텍스트_로딩_성공() {
+		// given
+		// when
+		// then
 	}
 
 }
