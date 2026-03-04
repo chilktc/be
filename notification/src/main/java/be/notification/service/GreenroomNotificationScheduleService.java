@@ -2,18 +2,16 @@ package be.notification.service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 import be.notification.domain.GreenroomNotificationSchedule;
 import be.notification.domain.NotificationScheduleStatus;
-import be.notification.domain.ProcessedEvent;
 import be.notification.dto.event.GreenroomDifficultyResolvedEvent;
 import be.notification.dto.event.GreenroomNotificationPreferenceUpdatedEvent;
 import be.notification.dto.event.GreenroomSessionCompletedEvent;
 import be.notification.repository.GreenroomNotificationScheduleRepository;
-import be.notification.repository.ProcessedEventRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,62 +25,41 @@ public class GreenroomNotificationScheduleService {
 	private static final long DUE_TOLERANCE_SECONDS = 180L;
 
 	private final GreenroomNotificationScheduleRepository scheduleRepository;
-	private final ProcessedEventRepository processedEventRepository;
 	private final GreenroomNotificationDispatchService dispatchService;
 
 	@Transactional
 	public void handleSessionCompleted(GreenroomSessionCompletedEvent event) {
-		// TODO : log 처리
-		if (processedEventRepository.existsById(event.eventId())) {
-			return;
-		}
-
-		Optional<GreenroomNotificationSchedule> existing = scheduleRepository.findByTicketId(event.ticketId());
-		GreenroomNotificationSchedule schedule = existing.orElseGet(
-			() -> GreenroomNotificationSchedule.create(
-				event.userId(),
-				event.ticketId(),
-				event.occurredAt(),
-				nullableInt(event.preferredHour(), DEFAULT_HOUR),
-				nullableInt(event.preferredMinute(), DEFAULT_MINUTE),
-				nullableString(event.timezone(), DEFAULT_TIMEZONE)
-			)
+		GreenroomNotificationSchedule schedule = GreenroomNotificationSchedule.create(
+			event.userId(),
+			event.ticketId(),
+			event.occurredAt(),
+			nullableInt(event.preferredHour(), DEFAULT_HOUR),
+			nullableInt(event.preferredMinute(), DEFAULT_MINUTE),
+			nullableString(event.timezone(), DEFAULT_TIMEZONE)
 		);
-
 		scheduleRepository.save(schedule);
-		processedEventRepository.save(ProcessedEvent.create(event.eventId(), event.eventType()));
 	}
 
 	@Transactional
 	public void handlePreferenceUpdated(GreenroomNotificationPreferenceUpdatedEvent event) {
-		// TODO : log 처리
-		if (processedEventRepository.existsById(event.eventId())) {
-			return;
-		}
+		GreenroomNotificationSchedule schedule = scheduleRepository.findByTicketId(event.ticketId())
+			.orElseThrow(() -> new CustomException(ErrorCode.GREENROOM_SESSION_NOT_COMPLETED));
 
-		scheduleRepository.findByTicketId(event.ticketId()).ifPresent(schedule -> {
-			schedule.updatePreference(
-				nullableInt(event.preferredHour(), DEFAULT_HOUR),
-				nullableInt(event.preferredMinute(), DEFAULT_MINUTE),
-				nullableString(event.timezone(), DEFAULT_TIMEZONE)
-			);
-			scheduleRepository.save(schedule);
-		});
-		processedEventRepository.save(ProcessedEvent.create(event.eventId(), event.eventType()));
+		schedule.updatePreference(
+			nullableInt(event.preferredHour(), DEFAULT_HOUR),
+			nullableInt(event.preferredMinute(), DEFAULT_MINUTE),
+			nullableString(event.timezone(), DEFAULT_TIMEZONE)
+		);
+		scheduleRepository.save(schedule);
 	}
 
 	@Transactional
 	public void handleResolved(GreenroomDifficultyResolvedEvent event) {
-		// TODO : log 처리
-		if (processedEventRepository.existsById(event.eventId())) {
-			return;
-		}
+		GreenroomNotificationSchedule schedule = scheduleRepository.findByTicketId(event.ticketId())
+			.orElseThrow(() -> new CustomException(ErrorCode.GREENROOM_SESSION_NOT_COMPLETED));
 
-		scheduleRepository.findByTicketId(event.ticketId()).ifPresent(schedule -> {
-			schedule.markResolved(event.occurredAt());
-			scheduleRepository.save(schedule);
-		});
-		processedEventRepository.save(ProcessedEvent.create(event.eventId(), event.eventType()));
+		schedule.markResolved(event.occurredAt());
+		scheduleRepository.save(schedule);
 	}
 
 	@Transactional
