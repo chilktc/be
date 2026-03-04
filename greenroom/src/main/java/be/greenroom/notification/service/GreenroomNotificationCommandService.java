@@ -10,7 +10,6 @@ import be.greenroom.notification.dto.event.GreenroomNotificationPreferenceUpdate
 import be.greenroom.notification.dto.event.GreenroomSessionCompletedEvent;
 import be.greenroom.notification.dto.request.ResolveDifficultyRequest;
 import be.greenroom.notification.dto.request.UpdateNotificationPreferenceRequest;
-import be.greenroom.notification.event.GreenroomEventType;
 import be.greenroom.notification.producer.GreenroomNotificationEventProducer;
 import lombok.RequiredArgsConstructor;
 
@@ -31,15 +30,14 @@ public class GreenroomNotificationCommandService {
 
 		GreenroomSessionCompletedEvent event = new GreenroomSessionCompletedEvent(
 			UUID.randomUUID(),
-			GreenroomEventType.GREENROOM_SESSION_COMPLETED.name(),
 			Instant.now(),
 			userId,
 			ticketId,
-			timezone,
 			preferredHour,
-			preferredMinute
+			preferredMinute,
+			timezone
 		);
-		producer.publish(event);
+		producer.publishSessionCompleted(event);
 	}
 
 	public void updateNotificationPreference(
@@ -49,26 +47,21 @@ public class GreenroomNotificationCommandService {
 	) {
 		GreenroomNotificationPreferenceUpdatedEvent event = new GreenroomNotificationPreferenceUpdatedEvent(
 			UUID.randomUUID(),
-			GreenroomEventType.GREENROOM_NOTIFICATION_PREFERENCE_UPDATED.name(),
 			Instant.now(),
-			userId,
 			ticketId,
 			request.preferredHour(),
 			request.preferredMinute(),
 			request.timezone()
 		);
-		producer.publish(event);
+		producer.publishPreferenceUpdated(event);
 	}
 
 	public void resolveDifficulty(UUID userId, UUID ticketId, ResolveDifficultyRequest request) {
 		GreenroomDifficultyResolvedEvent event = new GreenroomDifficultyResolvedEvent(
 			UUID.randomUUID(),
-			GreenroomEventType.GREENROOM_DIFFICULTY_RESOLVED.name(),
 			Instant.now(),
-			userId,
-			ticketId,
-			request.resolvedBy()
+			ticketId
 		);
-		producer.publish(event);
+		producer.publishDifficultyResolved(event);
 	}
 }

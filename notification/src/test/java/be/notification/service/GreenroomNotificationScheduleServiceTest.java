@@ -51,13 +51,12 @@ class GreenroomNotificationScheduleServiceTest {
 
 		GreenroomSessionCompletedEvent event = new GreenroomSessionCompletedEvent(
 			UUID.randomUUID(),
-			"GREENROOM_SESSION_COMPLETED",
 			Instant.parse("2026-03-01T08:00:00Z"),
 			userId,
 			ticketId,
-			"Asia/Seoul",
 			17,
-			31
+			31,
+			"Asia/Seoul"
 		);
 
 		scheduleService.handleSessionCompleted(event);
@@ -80,7 +79,6 @@ class GreenroomNotificationScheduleServiceTest {
 	void handleSessionCompleted_usesDefaultPreferenceWhenNull() {
 		GreenroomSessionCompletedEvent event = new GreenroomSessionCompletedEvent(
 			UUID.randomUUID(),
-			"GREENROOM_SESSION_COMPLETED",
 			Instant.parse("2026-03-01T08:00:00Z"),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
@@ -106,9 +104,7 @@ class GreenroomNotificationScheduleServiceTest {
 		UUID ticketId = UUID.randomUUID();
 		GreenroomNotificationPreferenceUpdatedEvent event = new GreenroomNotificationPreferenceUpdatedEvent(
 			UUID.randomUUID(),
-			"GREENROOM_NOTIFICATION_PREFERENCE_UPDATED",
 			Instant.now(),
-			UUID.randomUUID(),
 			ticketId,
 			22,
 			15,
@@ -139,9 +135,7 @@ class GreenroomNotificationScheduleServiceTest {
 
 		GreenroomNotificationPreferenceUpdatedEvent event = new GreenroomNotificationPreferenceUpdatedEvent(
 			UUID.randomUUID(),
-			"GREENROOM_NOTIFICATION_PREFERENCE_UPDATED",
 			Instant.parse("2026-03-01T09:00:00Z"),
-			userId,
 			ticketId,
 			22,
 			15,
@@ -163,11 +157,8 @@ class GreenroomNotificationScheduleServiceTest {
 		UUID ticketId = UUID.randomUUID();
 		GreenroomDifficultyResolvedEvent event = new GreenroomDifficultyResolvedEvent(
 			UUID.randomUUID(),
-			"GREENROOM_DIFFICULTY_RESOLVED",
 			Instant.now(),
-			UUID.randomUUID(),
-			ticketId,
-			"USER"
+			ticketId
 		);
 
 		when(scheduleRepository.findByTicketId(ticketId)).thenReturn(Optional.empty());
@@ -193,11 +184,8 @@ class GreenroomNotificationScheduleServiceTest {
 
 		GreenroomDifficultyResolvedEvent event = new GreenroomDifficultyResolvedEvent(
 			UUID.randomUUID(),
-			"GREENROOM_DIFFICULTY_RESOLVED",
 			Instant.parse("2026-03-02T08:00:00Z"),
-			UUID.randomUUID(),
-			ticketId,
-			"USER"
+			ticketId
 		);
 
 		when(scheduleRepository.findByTicketId(ticketId)).thenReturn(Optional.of(schedule));
