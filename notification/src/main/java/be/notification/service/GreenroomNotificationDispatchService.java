@@ -6,10 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import be.notification.domain.GreenroomNotificationHistory;
+import be.notification.domain.GreenroomNotificationHistoryErrorCode;
 import be.notification.domain.GreenroomNotificationSchedule;
 import be.notification.domain.GreenroomTemplateCode;
 import be.notification.domain.NotificationChannel;
 import be.notification.repository.GreenroomNotificationHistoryRepository;
+import be.notification.repository.GreenroomNotificationHistoryErrorCodeRepository;
 import be.notification.template.GreenroomTemplate;
 import be.notification.template.GreenroomTemplateRegistry;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class GreenroomNotificationDispatchService {
 
 	private final GreenroomTemplateRegistry templateRegistry;
 	private final GreenroomNotificationHistoryRepository historyRepository;
+	private final GreenroomNotificationHistoryErrorCodeRepository historyErrorCodeRepository;
 
 	@Transactional
 	public void sendEmail(GreenroomNotificationSchedule schedule) {
@@ -43,16 +46,18 @@ public class GreenroomNotificationDispatchService {
 		}
 
 		Instant failedAt = Instant.now();
-		historyRepository.save(
+		GreenroomNotificationHistory failedHistory = historyRepository.save(
 			GreenroomNotificationHistory.fail(
 				schedule.getId(),
 				schedule.getNextSequence(),
 				NotificationChannel.EMAIL,
 				templateCode,
 				idempotencyKey,
-				failedAt,
-				errorCode
+				failedAt
 			)
+		);
+		historyErrorCodeRepository.save(
+			GreenroomNotificationHistoryErrorCode.create(failedHistory, errorCode)
 		);
 		log.warn(
 			"[EMAIL][FAIL] userId={}, ticketId={}, seq={}, errorCode={}",
