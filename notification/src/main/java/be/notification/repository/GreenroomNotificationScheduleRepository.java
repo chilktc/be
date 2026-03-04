@@ -14,6 +14,8 @@ public interface GreenroomNotificationScheduleRepository extends JpaRepository<G
 
 	Optional<GreenroomNotificationSchedule> findByTicketId(UUID ticketId);
 
+	List<GreenroomNotificationSchedule> findByUserIdOrderByCreatedAtDesc(UUID userId);
+
 	List<GreenroomNotificationSchedule> findByStatusAndNextSendAtBetween(
 		NotificationScheduleStatus status,
 		Instant startInclusive,
