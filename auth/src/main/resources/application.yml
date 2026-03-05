@@ -21,6 +21,13 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
+app:
+  invite:
+    login-url: ${APP_INVITE_LOGIN_URL}
+
+  email:
+    from: ${EMAIL_FROM}
+
 oauth:
   google:
     client-id: ${GOOGLE_CLIENT_ID}
