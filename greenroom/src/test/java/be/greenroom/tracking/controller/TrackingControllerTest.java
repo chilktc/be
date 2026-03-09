@@ -22,25 +22,21 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import be.common.api.ApiAdvice;
-import be.greenroom.ticket.controller.TicketController;
-import be.greenroom.ticket.service.TicketService;
 import be.greenroom.tracking.domain.ResolvedHelpType;
 import be.greenroom.tracking.domain.ResolvedStateType;
 import be.greenroom.tracking.domain.TrackingStatus;
 import be.greenroom.tracking.dto.response.TrackingHistoryItemResponse;
 import be.greenroom.tracking.service.TicketTrackingService;
 
-class TicketControllerTrackingApiTest {
+class TrackingControllerTest {
 
 	private MockMvc mockMvc;
-	private TicketService ticketService;
 	private TicketTrackingService ticketTrackingService;
 
 	@BeforeEach
 	void setUp() {
-		ticketService = mock(TicketService.class);
 		ticketTrackingService = mock(TicketTrackingService.class);
-		TicketController controller = new TicketController(ticketService, ticketTrackingService);
+		TrackingController controller = new TrackingController(ticketTrackingService);
 		mockMvc = MockMvcBuilders.standaloneSetup(controller)
 			.setControllerAdvice(new ApiAdvice())
 			.build();
