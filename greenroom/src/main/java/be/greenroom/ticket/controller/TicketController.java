@@ -19,6 +19,9 @@ import be.greenroom.ticket.dto.request.CreateTicketRequest;
 import be.greenroom.ticket.dto.response.TicketPreviewResponse;
 import be.greenroom.ticket.dto.response.TicketResponse;
 import be.greenroom.ticket.service.TicketService;
+import be.greenroom.tracking.dto.request.CreateTrackingRequest;
+import be.greenroom.tracking.dto.response.TrackingHistoryItemResponse;
+import be.greenroom.tracking.service.TicketTrackingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -33,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class TicketController {
 
     private final TicketService ticketService;
+	private final TicketTrackingService ticketTrackingService;
 
 	@Operation(summary = "그린룸 입장권 생성", description = "그린룸 입장권을 생성합니다.")
     @PostMapping
@@ -74,5 +78,27 @@ public class TicketController {
 	) {
 		ticketService.resolveTicket(UUID.fromString(userIdHeader), ticketId);
 		return ApiResult.ok();
+	}
+
+	@Operation(summary = "트래킹 등록", description = "티켓 상태 추적 정보를 등록합니다.")
+	@PostMapping("/{ticketId}/tracking")
+	@ResponseStatus(HttpStatus.CREATED)
+	public ApiResult<Void> createTracking(
+		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
+		@PathVariable UUID ticketId,
+		@RequestBody @Valid CreateTrackingRequest request
+	) {
+		ticketTrackingService.create(UUID.fromString(userIdHeader), ticketId, request);
+		return ApiResult.ok();
+	}
+
+	@Operation(summary = "트래킹 조회", description = "최신순으로 상태 추적 정보를 조회합니다.")
+	@GetMapping("/{ticketId}/tracking")
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResult<List<TrackingHistoryItemResponse>> getTrackingHistory(
+		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
+		@PathVariable UUID ticketId
+	) {
+		return ApiResult.ok(ticketTrackingService.getHistory(UUID.fromString(userIdHeader), ticketId));
 	}
 }
