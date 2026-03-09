@@ -2,6 +2,7 @@ package be.notification.domain;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,11 +33,17 @@ public class GreenroomNotificationHistory {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "schedule_id", nullable = false)
-	private Long scheduleId;
+	@Column(name = "user_id", nullable = false)
+	private UUID userId;
+
+	@Column(name = "ticket_id", nullable = false)
+	private UUID ticketId;
 
 	@Column(nullable = false)
 	private int sequence;
+
+	@Column(nullable = false)
+	private int attempt;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -63,16 +70,20 @@ public class GreenroomNotificationHistory {
 	private LocalDateTime createdAt;
 
 	public static GreenroomNotificationHistory success(
-		Long scheduleId,
+		UUID userId,
+		UUID ticketId,
 		int sequence,
+		int attempt,
 		NotificationChannel channel,
 		GreenroomTemplateCode templateCode,
 		String idempotencyKey,
 		Instant sentAt
 	) {
 		GreenroomNotificationHistory history = new GreenroomNotificationHistory();
-		history.scheduleId = scheduleId;
+		history.userId = userId;
+		history.ticketId = ticketId;
 		history.sequence = sequence;
+		history.attempt = attempt;
 		history.channel = channel;
 		history.templateCode = templateCode;
 		history.idempotencyKey = idempotencyKey;
@@ -82,8 +93,10 @@ public class GreenroomNotificationHistory {
 	}
 
 	public static GreenroomNotificationHistory fail(
-		Long scheduleId,
+		UUID userId,
+		UUID ticketId,
 		int sequence,
+		int attempt,
 		NotificationChannel channel,
 		GreenroomTemplateCode templateCode,
 		String idempotencyKey,
@@ -91,8 +104,10 @@ public class GreenroomNotificationHistory {
 		String errorCode
 	) {
 		GreenroomNotificationHistory history = success(
-			scheduleId,
+			userId,
+			ticketId,
 			sequence,
+			attempt,
 			channel,
 			templateCode,
 			idempotencyKey,
