@@ -74,6 +74,8 @@ public class GoogleOauthService {
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.OAUTH_EMAIL_NOT_REGISTERED));
 
+		Preconditions.validate(user.isActive(), ErrorCode.USER_DISABLED);
+
 		if (user.getProvider() == null) {
 			user.bindGoogleOAuth(googleSub, googleName);
 		}

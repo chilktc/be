@@ -152,7 +152,6 @@ public class User {
 		);
 	}
 
-	//TODO: 어드민 조직원 초대 API
 	public void completeFirstLogin() {
 		this.firstLogin = false;
 	}

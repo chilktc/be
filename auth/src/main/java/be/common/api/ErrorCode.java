@@ -24,7 +24,10 @@ public enum ErrorCode {
 	OAUTH_USERINFO_FAILED(HttpStatus.UNAUTHORIZED, "OAuth 사용자 정보를 가져오지 못했습니다."),
 	OAUTH_EMAIL_NOT_REGISTERED(HttpStatus.FORBIDDEN, "이메일로 등록된 사용자가 없습니다."),
 	OAUTH_PROVIDER_MISMATCH(HttpStatus.FORBIDDEN, "OAuth 제공자 정보가 일치하지 않습니다."),
-	INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "닉네임을 입력하세요.")
+	INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "닉네임을 입력하세요."),
+	ALREADY_CONSENTED(HttpStatus.BAD_REQUEST, "이미 동의가 완료된 사용자입니다."),
+	PRIVACY_NOT_AGREED(HttpStatus.BAD_REQUEST, "개인정보 수집 및 이용에 동의해야 합니다."),
+	USER_DISABLED(HttpStatus.FORBIDDEN, "사용이 중지된 계정입니다.")
 	,;
 	private final HttpStatus status;
 	private final String message;
