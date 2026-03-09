@@ -64,4 +64,15 @@ public class TicketController {
 	) {
 		return ApiResult.ok(ticketService.getTicket(ticketId));
 	}
+
+	@Operation(summary = "그린룸 티켓 해결 처리", description = "해결 완료된 티켓은 알림 발송 대상에서 제외됩니다.")
+	@PostMapping("/{ticketId}/resolve")
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResult<Void> resolveTicket(
+		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
+		@PathVariable UUID ticketId
+	) {
+		ticketService.resolveTicket(UUID.fromString(userIdHeader), ticketId);
+		return ApiResult.ok();
+	}
 }
