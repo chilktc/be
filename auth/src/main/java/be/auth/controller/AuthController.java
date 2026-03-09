@@ -7,6 +7,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,18 +46,6 @@ public class AuthController {
 	) {
 		var result = authService.login(request.email(), request.password());
 
-		response.addHeader(
-			"Set-Cookie",
-			ResponseCookie.from("accessToken", result.accessToken())
-				.httpOnly(true)
-				.secure(false) // 배포 시 true
-				.sameSite("Lax")
-				.path("/")
-				.maxAge(Duration.ofMinutes(5))
-				.build()
-				.toString()
-		);
-
 		// Refresh Token을 HttpOnly Cookie로 설정
 		response.addHeader(
 			"Set-Cookie",
@@ -71,7 +60,7 @@ public class AuthController {
 				.toString()
 		);
 
-		return ApiResult.ok(new LoginResponse(result.firstLogin()));
+		return ApiResult.ok(new LoginResponse(result.accessToken(), result.firstLogin()));
 	}
 
 
@@ -90,18 +79,6 @@ public class AuthController {
 
 		response.addHeader(
 			"Set-Cookie",
-			ResponseCookie.from("accessToken", result.accessToken())
-				.httpOnly(true)
-				.secure(false)
-				.sameSite("Lax")
-				.path("/")
-				.maxAge(Duration.ofMinutes(5))
-				.build()
-				.toString()
-		);
-
-		response.addHeader(
-			"Set-Cookie",
 			ResponseCookie.from("refreshToken", result.refreshToken())
 				.httpOnly(true)
 				.secure(false)
@@ -112,7 +89,7 @@ public class AuthController {
 				.toString()
 		);
 
-		return ApiResult.ok(new LoginResponse(false));
+		return ApiResult.ok(new LoginResponse(result.accessToken(), false));
 	}
 
 	@Operation(summary = "회원가입", description = "회원 가입 API입니다.")
@@ -129,22 +106,16 @@ public class AuthController {
 	@PostMapping("/logout")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> logout(
-		@CookieValue(value = "accessToken", required = false) String accessToken,
+		@RequestHeader(value = "Authorization", required = false) String authorization,
 		@CookieValue(value = "refreshToken", required = false) String refreshToken,
 		HttpServletResponse response
 	) {
+		// Bearer 제거
+		String accessToken = null;
+		if (authorization != null && authorization.startsWith("Bearer ")) {
+			accessToken = authorization.substring(7);
+		}
 		authService.logout(accessToken, refreshToken);
-
-		response.addHeader("Set-Cookie",
-			ResponseCookie.from("accessToken", "")
-				.httpOnly(true)
-				.secure(false)
-				.sameSite("Lax")
-				.path("/")
-				.maxAge(0)
-				.build()
-				.toString()
-		);
 
 		// refreshToken 쿠키 만료
 		response.addHeader(
