@@ -112,8 +112,7 @@ public class GreenroomNotificationDispatchService {
 				NotificationChannel.EMAIL,
 				templateCode,
 				idempotencyKey,
-				failedAt,
-				errorCode
+				failedAt
 			)
 		);
 		log.warn(
