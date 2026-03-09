@@ -37,6 +37,7 @@ class GreenroomNotificationSchedulerTest {
 	@Test
 	@DisplayName("발송 성공 시 nextSequence를 증가시킨다")
 	void 발송성공시_시퀀스증가() {
+		// given
 		GreenroomNotificationTarget target = GreenroomNotificationTarget.create(
 			UUID.randomUUID(),
 			UUID.randomUUID(),
@@ -48,8 +49,10 @@ class GreenroomNotificationSchedulerTest {
 		when(dispatchService.sendEmail(target.getUserId(), target.getTicketId(), target.getNextSequence()))
 			.thenReturn(true);
 
+		// when
 		scheduler.run();
 
+		// then
 		ArgumentCaptor<GreenroomNotificationTarget> captor = ArgumentCaptor.forClass(GreenroomNotificationTarget.class);
 		verify(targetRepository).save(captor.capture());
 		assertThat(captor.getValue().getNextSequence()).isEqualTo(2);
@@ -58,6 +61,7 @@ class GreenroomNotificationSchedulerTest {
 	@Test
 	@DisplayName("발송 실패 시 nextSequence를 유지한다")
 	void 발송실패시_시퀀스유지() {
+		// given
 		GreenroomNotificationTarget target = GreenroomNotificationTarget.create(
 			UUID.randomUUID(),
 			UUID.randomUUID(),
@@ -69,8 +73,10 @@ class GreenroomNotificationSchedulerTest {
 		when(dispatchService.sendEmail(target.getUserId(), target.getTicketId(), target.getNextSequence()))
 			.thenReturn(false);
 
+		// when
 		scheduler.run();
 
+		// then
 		verify(targetRepository, never()).save(any());
 	}
 }

@@ -44,6 +44,7 @@ class GreenroomNotificationEventServiceTest {
 	@Test
 	@DisplayName("ticket created 이벤트는 target을 생성한다")
 	void 티켓생성_이벤트_타겟생성() {
+		// given
 		UUID eventId = UUID.randomUUID();
 		UUID userId = UUID.randomUUID();
 		UUID ticketId = UUID.randomUUID();
@@ -51,6 +52,7 @@ class GreenroomNotificationEventServiceTest {
 		when(preferenceRepository.findById(userId)).thenReturn(Optional.empty());
 		when(targetRepository.findById(ticketId)).thenReturn(Optional.empty());
 
+		// when
 		service.handleTicketCreated(new GreenroomTicketCreatedEvent(
 			eventId,
 			"GREENROOM_TICKET_CREATED",
@@ -60,6 +62,7 @@ class GreenroomNotificationEventServiceTest {
 			LocalDateTime.of(2026, 3, 1, 10, 0)
 		));
 
+		// then
 		verify(targetRepository).save(any(GreenroomNotificationTarget.class));
 		verify(processedEventRepository).save(any());
 	}
@@ -67,9 +70,11 @@ class GreenroomNotificationEventServiceTest {
 	@Test
 	@DisplayName("이미 처리한 이벤트는 무시한다")
 	void 중복이벤트_무시() {
+		// given
 		UUID eventId = UUID.randomUUID();
 		when(processedEventRepository.existsById(eventId)).thenReturn(true);
 
+		// when
 		service.handleTicketResolved(new GreenroomTicketResolvedEvent(
 			eventId,
 			"GREENROOM_TICKET_RESOLVED",
@@ -78,12 +83,14 @@ class GreenroomNotificationEventServiceTest {
 			UUID.randomUUID()
 		));
 
+		// then
 		verify(targetRepository, never()).save(any());
 	}
 
 	@Test
 	@DisplayName("preference update 이벤트는 사용자 preference와 대상 target enabled를 갱신한다")
 	void 알림설정_이벤트_갱신() {
+		// given
 		UUID eventId = UUID.randomUUID();
 		UUID userId = UUID.randomUUID();
 		when(processedEventRepository.existsById(eventId)).thenReturn(false);
@@ -92,6 +99,7 @@ class GreenroomNotificationEventServiceTest {
 			GreenroomNotificationTarget.create(UUID.randomUUID(), userId, LocalDateTime.now(), true)
 		));
 
+		// when
 		service.handleUserPreferenceUpdated(new GreenroomUserNotificationPreferenceUpdatedEvent(
 			eventId,
 			"GREENROOM_USER_NOTIFICATION_PREFERENCE_UPDATED",
@@ -100,6 +108,7 @@ class GreenroomNotificationEventServiceTest {
 			false
 		));
 
+		// then
 		ArgumentCaptor<GreenroomNotificationUserPreference> prefCaptor = ArgumentCaptor.forClass(
 			GreenroomNotificationUserPreference.class
 		);

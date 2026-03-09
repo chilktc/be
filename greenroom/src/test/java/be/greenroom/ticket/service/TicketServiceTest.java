@@ -40,6 +40,7 @@ class TicketServiceTest {
 	@Test
 	@DisplayName("티켓 생성 시 TICKET_CREATED 이벤트를 발행한다")
 	void 티켓생성_이벤트발행() {
+		// given
 		UUID userId = UUID.randomUUID();
 		when(ticketRepository.save(any(Ticket.class))).thenAnswer(invocation -> {
 			Ticket ticket = invocation.getArgument(0);
@@ -47,8 +48,10 @@ class TicketServiceTest {
 			return ticket;
 		});
 
+		// when
 		ticketService.create(userId, new CreateTicketRequest("s", "t", "a", "c"));
 
+		// then
 		ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
 		verify(eventPublisher).publish(org.mockito.ArgumentMatchers.eq(userId.toString()), eventCaptor.capture());
 		org.assertj.core.api.Assertions.assertThat(eventCaptor.getValue()).isInstanceOf(GreenroomTicketCreatedEvent.class);
@@ -57,14 +60,17 @@ class TicketServiceTest {
 	@Test
 	@DisplayName("티켓 해결 시 TICKET_RESOLVED 이벤트를 발행한다")
 	void 티켓해결_이벤트발행() {
+		// given
 		UUID userId = UUID.randomUUID();
 		UUID ticketId = UUID.randomUUID();
 		Ticket ticket = Ticket.create(userId, "n", "s", "t", "a", "c");
 		ReflectionTestUtils.setField(ticket, "id", ticketId);
 		when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
 
+		// when
 		ticketService.resolveTicket(userId, ticketId);
 
+		// then
 		ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
 		verify(eventPublisher).publish(org.mockito.ArgumentMatchers.eq(userId.toString()), eventCaptor.capture());
 		org.assertj.core.api.Assertions.assertThat(eventCaptor.getValue()).isInstanceOf(GreenroomTicketResolvedEvent.class);
@@ -73,6 +79,7 @@ class TicketServiceTest {
 	@Test
 	@DisplayName("타인 티켓 해결 시 예외가 발생한다")
 	void 타인티켓_해결예외() {
+		// given
 		UUID owner = UUID.randomUUID();
 		UUID other = UUID.randomUUID();
 		UUID ticketId = UUID.randomUUID();
@@ -80,6 +87,7 @@ class TicketServiceTest {
 		ReflectionTestUtils.setField(ticket, "id", ticketId);
 		when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
 
+		// when then
 		assertThatThrownBy(() -> ticketService.resolveTicket(other, ticketId))
 			.isInstanceOf(CustomException.class);
 	}

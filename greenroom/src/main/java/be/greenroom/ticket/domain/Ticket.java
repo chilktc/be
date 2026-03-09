@@ -39,7 +39,7 @@ public class Ticket {
     @Column
     private String colleagueReaction;
 
-    @Column(nullable = false, updatable = false)
+	@Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     private Ticket(UUID userId, String name, String situation, String thought, String action, String colleagueReaction) {

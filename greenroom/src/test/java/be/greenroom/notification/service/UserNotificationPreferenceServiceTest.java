@@ -33,11 +33,14 @@ class UserNotificationPreferenceServiceTest {
 	@Test
 	@DisplayName("알림 설정 변경 시 USER_NOTIFICATION_PREFERENCE_UPDATED 이벤트를 발행한다")
 	void 알림설정변경_이벤트발행() {
+		// given
 		UUID userId = UUID.randomUUID();
 		when(preferenceRepository.findById(userId)).thenReturn(Optional.of(UserNotificationPreference.create(userId, true)));
 
+		// when
 		service.toggle(userId);
 
+		// then
 		verify(preferenceRepository).save(any(UserNotificationPreference.class));
 		ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
 		verify(eventPublisher).publish(org.mockito.ArgumentMatchers.eq(userId.toString()), captor.capture());

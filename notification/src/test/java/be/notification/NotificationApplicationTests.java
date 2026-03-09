@@ -10,6 +10,7 @@ class NotificationApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// given when then
 	}
 
 }

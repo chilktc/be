@@ -38,12 +38,15 @@ class GreenroomNotificationDispatchServiceTest {
 	@Test
 	@DisplayName("정상 발송 시 성공 이력을 저장한다")
 	void 정상발송_성공이력저장() {
+		// given
 		when(templateRegistry.get(any(GreenroomTemplateCode.class)))
 			.thenReturn(new GreenroomTemplate("s", "b", "c"));
 		when(historyRepository.existsByIdempotencyKey(any())).thenReturn(false);
 
+		// when
 		boolean result = dispatchService.sendEmail(UUID.randomUUID(), UUID.randomUUID(), 1);
 
+		// then
 		assertThat(result).isTrue();
 		ArgumentCaptor<GreenroomNotificationHistory> captor = ArgumentCaptor.forClass(GreenroomNotificationHistory.class);
 		verify(historyRepository).save(captor.capture());
@@ -53,6 +56,7 @@ class GreenroomNotificationDispatchServiceTest {
 	@Test
 	@DisplayName("성공 저장 실패가 반복되면 최대 3회 실패 이력을 남기고 false를 반환한다")
 	void 실패재시도_3회() {
+		// given
 		when(templateRegistry.get(any(GreenroomTemplateCode.class)))
 			.thenReturn(new GreenroomTemplate("s", "b", "c"));
 		when(historyRepository.existsByIdempotencyKey(any())).thenReturn(false);
@@ -64,8 +68,10 @@ class GreenroomNotificationDispatchServiceTest {
 			return history;
 		});
 
+		// when
 		boolean result = dispatchService.sendEmail(UUID.randomUUID(), UUID.randomUUID(), 1);
 
+		// then
 		assertThat(result).isFalse();
 		verify(historyRepository, atLeast(6)).save(any(GreenroomNotificationHistory.class));
 	}
