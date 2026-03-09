@@ -1,12 +1,14 @@
 package be.notification.service;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import be.notification.domain.GreenroomNotificationHistory;
-import be.notification.domain.GreenroomNotificationSchedule;
 import be.notification.domain.GreenroomTemplateCode;
 import be.notification.domain.NotificationChannel;
 import be.notification.repository.GreenroomNotificationHistoryRepository;
@@ -20,69 +22,53 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class GreenroomNotificationDispatchService {
 
+	private static final int MAX_RETRY_ATTEMPTS = 3;
+	private static final ZoneId SEOUL_ZONE = ZoneId.of("Asia/Seoul");
+
 	private final GreenroomTemplateRegistry templateRegistry;
 	private final GreenroomNotificationHistoryRepository historyRepository;
 
 	@Transactional
-	public void sendEmail(GreenroomNotificationSchedule schedule) {
-		GreenroomTemplateCode templateCode = GreenroomTemplateCode.fromSequence(schedule.getNextSequence());
+	public boolean sendEmail(UUID userId, UUID ticketId, int sequence) {
+		GreenroomTemplateCode templateCode = GreenroomTemplateCode.fromSequence(sequence);
 		GreenroomTemplate template = templateRegistry.get(templateCode);
-		// TODO : 리다이렉트 주소 수정
-		String deepLink = "myapp://tracking/greenroom/" + schedule.getTicketId();
-		String webFallback = "https://app.example.com/tracking/greenroom/" + schedule.getTicketId();
+		String deepLink = "myapp://tracking/greenroom/" + ticketId;
+		String webFallback = "https://app.example.com/tracking/greenroom/" + ticketId;
 
-		sendEmail(schedule, templateCode, template, deepLink, webFallback);
-	}
-
-	@Transactional
-	public boolean markEmailFailedIfUnsent(GreenroomNotificationSchedule schedule, String errorCode) {
-		GreenroomTemplateCode templateCode = GreenroomTemplateCode.fromSequence(schedule.getNextSequence());
-		String idempotencyKey = idempotencyKey(schedule, NotificationChannel.EMAIL);
-		if (historyRepository.existsByIdempotencyKey(idempotencyKey)) {
-			return false;
+		for (int attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+			try {
+				sendEmail(userId, ticketId, sequence, attempt, templateCode, template, deepLink, webFallback);
+				return true;
+			} catch (Exception exception) {
+				saveFailure(userId, ticketId, sequence, attempt, templateCode, exception.getClass().getSimpleName());
+			}
 		}
-
-		Instant failedAt = Instant.now();
-		historyRepository.save(
-			GreenroomNotificationHistory.fail(
-				schedule.getId(),
-				schedule.getNextSequence(),
-				NotificationChannel.EMAIL,
-				templateCode,
-				idempotencyKey,
-				failedAt,
-				errorCode
-			)
-		);
-		log.warn(
-			"[EMAIL][FAIL] userId={}, ticketId={}, seq={}, errorCode={}",
-			schedule.getUserId(),
-			schedule.getTicketId(),
-			schedule.getNextSequence(),
-			errorCode
-		);
-		return true;
+		return false;
 	}
 
 	private void sendEmail(
-		GreenroomNotificationSchedule schedule,
+		UUID userId,
+		UUID ticketId,
+		int sequence,
+		int attempt,
 		GreenroomTemplateCode templateCode,
 		GreenroomTemplate template,
 		String deepLink,
 		String webFallback
 	) {
-		String idempotencyKey = idempotencyKey(schedule, NotificationChannel.EMAIL);
+		String idempotencyKey = idempotencyKey(userId, ticketId, sequence, attempt, NotificationChannel.EMAIL);
 		if (historyRepository.existsByIdempotencyKey(idempotencyKey)) {
 			return;
 		}
 
 		Instant sentAt = Instant.now();
-		// TODO : 실제 이메일을 전송하도록 수정
+		// TODO : 실제 이메일 전송 로직 연동
 		log.info(
-			"[EMAIL] userId={}, ticketId={}, seq={}, subject={}, body={}, cta={}, deepLink={}, webFallback={}",
-			schedule.getUserId(),
-			schedule.getTicketId(),
-			schedule.getNextSequence(),
+			"[EMAIL] userId={}, ticketId={}, seq={}, attempt={}, subject={}, body={}, cta={}, deepLink={}, webFallback={}",
+			userId,
+			ticketId,
+			sequence,
+			attempt,
 			template.subject(),
 			template.body(),
 			template.ctaText(),
@@ -91,8 +77,10 @@ public class GreenroomNotificationDispatchService {
 		);
 		historyRepository.save(
 			GreenroomNotificationHistory.success(
-				schedule.getId(),
-				schedule.getNextSequence(),
+				userId,
+				ticketId,
+				sequence,
+				attempt,
 				NotificationChannel.EMAIL,
 				templateCode,
 				idempotencyKey,
@@ -101,7 +89,45 @@ public class GreenroomNotificationDispatchService {
 		);
 	}
 
-	private String idempotencyKey(GreenroomNotificationSchedule schedule, NotificationChannel channel) {
-		return schedule.getId() + ":" + schedule.getNextSequence() + ":" + channel.name();
+	private void saveFailure(
+		UUID userId,
+		UUID ticketId,
+		int sequence,
+		int attempt,
+		GreenroomTemplateCode templateCode,
+		String errorCode
+	) {
+		String idempotencyKey = idempotencyKey(userId, ticketId, sequence, attempt, NotificationChannel.EMAIL);
+		if (historyRepository.existsByIdempotencyKey(idempotencyKey)) {
+			return;
+		}
+
+		Instant failedAt = Instant.now();
+		historyRepository.save(
+			GreenroomNotificationHistory.fail(
+				userId,
+				ticketId,
+				sequence,
+				attempt,
+				NotificationChannel.EMAIL,
+				templateCode,
+				idempotencyKey,
+				failedAt,
+				errorCode
+			)
+		);
+		log.warn(
+			"[EMAIL][FAIL] userId={}, ticketId={}, seq={}, attempt={}, errorCode={}",
+			userId,
+			ticketId,
+			sequence,
+			attempt,
+			errorCode
+		);
+	}
+
+	private String idempotencyKey(UUID userId, UUID ticketId, int sequence, int attempt, NotificationChannel channel) {
+		String dayKey = ZonedDateTime.now(SEOUL_ZONE).toLocalDate().toString();
+		return userId + ":" + ticketId + ":" + dayKey + ":" + sequence + ":" + attempt + ":" + channel.name();
 	}
 }
