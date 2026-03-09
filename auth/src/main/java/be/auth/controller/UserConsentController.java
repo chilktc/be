@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "User Onboarding", description = "최초 로그인 개인정보 동의 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth/onboarding")
+@RequestMapping("/auth")
 public class UserConsentController {
 	private final UserConsentService userConsentService;
 
