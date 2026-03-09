@@ -52,6 +52,13 @@ spring:
               filters:
                 - JwtAuthenticationFilter
 
+            - id: notification
+              uri: http://${NOTIFICATION_SERVER_HOST:localhost}:${NOTIFICATION_SERVER_PORT:8083}
+              predicates:
+                - Path=/notification/**
+              filters:
+                - JwtAuthenticationFilter
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
