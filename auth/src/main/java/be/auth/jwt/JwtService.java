@@ -7,7 +7,13 @@ import org.springframework.stereotype.Component;
 
 import be.common.api.CustomException;
 import be.common.api.ErrorCode;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -46,20 +52,23 @@ public class JwtService {
 				.build()
 				.parseSignedClaims(token);
 
-		} catch (io.jsonwebtoken.ExpiredJwtException e) {
+		} catch (ExpiredJwtException e) {
 			throw new CustomException(ErrorCode.JWT_TOKEN_EXPIRED);
 
-		} catch (io.jsonwebtoken.SignatureException e) {
+		} catch (SignatureException e) {
 			throw new CustomException(ErrorCode.JWT_INVALID_SIGNATURE);
 
-		} catch (io.jsonwebtoken.UnsupportedJwtException e) {
+		} catch (UnsupportedJwtException e) {
 			throw new CustomException(ErrorCode.JWT_UNSUPPORTED_TOKEN);
 
-		} catch (io.jsonwebtoken.MalformedJwtException e) {
+		} catch (MalformedJwtException e) {
 			throw new CustomException(ErrorCode.JWT_INVALID_TOKEN);
 
 		} catch (IllegalArgumentException e) {
 			throw new CustomException(ErrorCode.JWT_EMPTY_TOKEN);
+		}
+		catch (JwtException e) {
+			throw new CustomException(ErrorCode.JWT_INVALID_TOKEN);
 		}
 	}
 
