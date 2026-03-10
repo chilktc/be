@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -95,9 +94,6 @@ class GreenroomNotificationEventServiceTest {
 		UUID userId = UUID.randomUUID();
 		when(processedEventRepository.existsById(eventId)).thenReturn(false);
 		when(preferenceRepository.findById(userId)).thenReturn(Optional.empty());
-		when(targetRepository.findByUserId(userId)).thenReturn(List.of(
-			GreenroomNotificationTarget.create(UUID.randomUUID(), userId, LocalDateTime.now(), true)
-		));
 
 		// when
 		service.handleUserPreferenceUpdated(new GreenroomUserNotificationPreferenceUpdatedEvent(
@@ -114,5 +110,6 @@ class GreenroomNotificationEventServiceTest {
 		);
 		verify(preferenceRepository).save(prefCaptor.capture());
 		assertThat(prefCaptor.getValue().isEnabled()).isFalse();
+		verify(targetRepository).updateEnabledByUserId(userId, false);
 	}
 }

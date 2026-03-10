@@ -28,3 +28,6 @@ spring:
       properties:
         fetch.min.bytes: 1
         spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer

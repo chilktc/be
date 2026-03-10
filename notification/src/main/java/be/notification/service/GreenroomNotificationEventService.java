@@ -66,11 +66,7 @@ public class GreenroomNotificationEventService {
 			.orElseGet(() -> GreenroomNotificationUserPreference.create(event.userId(), true));
 		preference.changeEnabled(event.enabled());
 		preferenceRepository.save(preference);
-
-		targetRepository.findByUserId(event.userId()).forEach(target -> {
-			target.changeEnabled(event.enabled());
-			targetRepository.save(target);
-		});
+		targetRepository.updateEnabledByUserId(event.userId(), event.enabled());
 
 		saveProcessed(event.eventId(), event.eventType());
 	}
