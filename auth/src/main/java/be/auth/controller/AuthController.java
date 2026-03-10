@@ -103,6 +103,7 @@ public class AuthController {
 		return ApiResult.ok();
 	}
 
+	@Operation(summary = "로그아웃", description = "리프레쉬 토큰을 만료시키고 로그아웃합니다.")
 	@PostMapping("/logout")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> logout(
