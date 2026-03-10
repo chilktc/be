@@ -7,6 +7,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,18 +53,6 @@ public class GoogleOauthController {
 	) {
 		LoginResult result = googleOauthService.login(request.code());
 
-		response.addHeader(
-			"Set-Cookie",
-			ResponseCookie.from("accessToken", result.accessToken())
-				.httpOnly(true)
-				.secure(false)           // HTTPS 환경에서만
-				.sameSite("Lax")
-				.path("/")
-				.maxAge(Duration.ofMinutes(5))
-				.build()
-				.toString()
-		);
-
 		// Refresh Token을 HttpOnly Cookie로 설정
 		response.addHeader(
 			"Set-Cookie",
@@ -78,34 +67,27 @@ public class GoogleOauthController {
 				.toString()
 		);
 
-		return ApiResult.ok(new LoginResponse(result.firstLogin()));
+		return ApiResult.ok(new LoginResponse(result.accessToken(), result.firstLogin()));
 	}
 
 	@Operation(
 		summary = "소셜 로그아웃",
-		security = @SecurityRequirement(name = "bearerAuth"),
+		security = @SecurityRequirement(name = "Access Token"),
 		description = "토큰을 만료시키고 로그아웃합니다."
 	)
 	@PostMapping("/logout")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> googleLogout(
-		@CookieValue(value = "accessToken", required = false) String accessToken,
+		@RequestHeader(value = "Authorization", required = false) String authorization,
 		@CookieValue(value = "refreshToken", required = false) String refreshToken,
 		HttpServletResponse response
 	) {
+		// Bearer 제거
+		String accessToken = null;
+		if (authorization != null && authorization.startsWith("Bearer ")) {
+			accessToken = authorization.substring(7);
+		}
 		authService.logout(accessToken, refreshToken);
-
-		response.addHeader(
-			"Set-Cookie",
-			ResponseCookie.from("accessToken", "")
-				.httpOnly(true)
-				.secure(false)       // 배포 시 true
-				.sameSite("Lax")
-				.path("/")
-				.maxAge(0)
-				.build()
-				.toString()
-		);
 
 		// refreshToken 쿠키 만료
 		response.addHeader(
