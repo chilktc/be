@@ -97,21 +97,4 @@ public class TicketService {
 		Preconditions.validate(!userId.equals(ticket.getUserId()), ErrorCode.NO_TICKET_ACCESS);
 		return TicketResponse.from(ticket);
 	}
-
-	@Transactional
-	public void resolveTicket(UUID userId, UUID ticketId) {
-		Ticket ticket = ticketRepository.findById(ticketId)
-			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
-		if (!ticket.getUserId().equals(userId)) {
-			throw new CustomException(ErrorCode.NO_TICKET_ACCESS);
-		}
-		GreenroomTicketResolvedEvent event = new GreenroomTicketResolvedEvent(
-			UUID.randomUUID(),
-			GreenroomNotificationEventType.GREENROOM_TICKET_RESOLVED.name(),
-			LocalDateTime.now(),
-			ticketId,
-			userId
-		);
-		eventPublisher.publish(userId.toString(), event);
-	}
 }
