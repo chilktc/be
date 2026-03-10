@@ -26,17 +26,17 @@ import be.greenroom.tracking.domain.ResolvedHelpType;
 import be.greenroom.tracking.domain.ResolvedStateType;
 import be.greenroom.tracking.domain.TrackingStatus;
 import be.greenroom.tracking.dto.response.TrackingHistoryItemResponse;
-import be.greenroom.tracking.service.TicketTrackingService;
+import be.greenroom.tracking.service.TrackingService;
 
 class TrackingControllerTest {
 
 	private MockMvc mockMvc;
-	private TicketTrackingService ticketTrackingService;
+	private TrackingService trackingService;
 
 	@BeforeEach
 	void setUp() {
-		ticketTrackingService = mock(TicketTrackingService.class);
-		TrackingController controller = new TrackingController(ticketTrackingService);
+		trackingService = mock(TrackingService.class);
+		TrackingController controller = new TrackingController(trackingService);
 		mockMvc = MockMvcBuilders.standaloneSetup(controller)
 			.setControllerAdvice(new ApiAdvice())
 			.build();
@@ -65,7 +65,7 @@ class TrackingControllerTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath("$.code").value("ok"));
 
-		verify(ticketTrackingService).create(eq(userId), eq(ticketId), any());
+		verify(trackingService).create(eq(userId), eq(ticketId), any());
 	}
 
 	@Test
@@ -74,7 +74,7 @@ class TrackingControllerTest {
 		// given
 		UUID userId = UUID.randomUUID();
 		UUID ticketId = UUID.randomUUID();
-		when(ticketTrackingService.getHistory(userId, ticketId)).thenReturn(List.of(
+		when(trackingService.getHistory(userId, ticketId)).thenReturn(List.of(
 			new TrackingHistoryItemResponse(
 				TrackingStatus.RESOLVED,
 				LocalDateTime.of(2026, 3, 9, 8, 30),

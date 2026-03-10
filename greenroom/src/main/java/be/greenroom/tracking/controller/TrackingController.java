@@ -19,7 +19,7 @@ import be.common.api.ErrorCode;
 import be.common.docs.ApiErrorCodeExamples;
 import be.greenroom.tracking.dto.request.CreateTrackingRequest;
 import be.greenroom.tracking.dto.response.TrackingHistoryItemResponse;
-import be.greenroom.tracking.service.TicketTrackingService;
+import be.greenroom.tracking.service.TrackingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/greenroom/tickets")
 public class TrackingController {
 
-	private final TicketTrackingService ticketTrackingService;
+	private final TrackingService trackingService;
 
 	@Operation(summary = "트래킹 등록", description = "티켓 상태 추적 정보를 등록합니다.")
 	@ApiErrorCodeExamples({
@@ -50,7 +50,7 @@ public class TrackingController {
 		@PathVariable UUID ticketId,
 		@RequestBody @Valid CreateTrackingRequest request
 	) {
-		ticketTrackingService.create(UUID.fromString(userIdHeader), ticketId, request);
+		trackingService.create(UUID.fromString(userIdHeader), ticketId, request);
 		return ApiResult.ok();
 	}
 
@@ -65,6 +65,6 @@ public class TrackingController {
 		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
 		@PathVariable UUID ticketId
 	) {
-		return ApiResult.ok(ticketTrackingService.getHistory(UUID.fromString(userIdHeader), ticketId));
+		return ApiResult.ok(trackingService.getHistory(UUID.fromString(userIdHeader), ticketId));
 	}
 }

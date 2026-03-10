@@ -9,17 +9,15 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "ticket_tracking_records")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TrackingRecord {
+public class Tracking {
 	@Id
 	@Column(nullable = false, updatable = false)
 	private UUID id;
@@ -63,7 +61,7 @@ public class TrackingRecord {
 	private LocalDateTime createdAt;
 
 	@Builder
-	private TrackingRecord(
+	private Tracking(
 		UUID ticketId,
 		UUID userId,
 		TrackingStatus status,

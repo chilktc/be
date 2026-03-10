@@ -17,20 +17,20 @@ import be.greenroom.notification.service.GreenroomNotificationEventPublisher;
 import be.greenroom.ticket.domain.Ticket;
 import be.greenroom.ticket.repository.TicketRepository;
 import be.greenroom.tracking.domain.ResolvedHelpType;
-import be.greenroom.tracking.domain.TrackingRecord;
+import be.greenroom.tracking.domain.Tracking;
 import be.greenroom.tracking.domain.TrackingStatus;
 import be.greenroom.tracking.domain.UnresolvedBlockerType;
 import be.greenroom.tracking.dto.request.CreateTrackingRequest;
 import be.greenroom.tracking.dto.response.TrackingHistoryItemResponse;
-import be.greenroom.tracking.repository.TrackingRecordRepository;
+import be.greenroom.tracking.repository.TrackingRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class TicketTrackingService {
+public class TrackingService {
 
 	private final TicketRepository ticketRepository;
-	private final TrackingRecordRepository trackingRecordRepository;
+	private final TrackingRepository trackingRepository;
 	private final GreenroomNotificationEventPublisher eventPublisher;
 
 	@Transactional
@@ -41,7 +41,7 @@ public class TicketTrackingService {
 		validateAlreadyResolved(ticketId);
 		validateRequest(request);
 
-		TrackingRecord record = TrackingRecord.builder()
+		Tracking record = Tracking.builder()
 			.ticketId(ticketId)
 			.userId(userId)
 			.status(request.status())
@@ -53,7 +53,7 @@ public class TicketTrackingService {
 			.unresolvedNeedType(request.unresolvedNeedType())
 			.note(request.note())
 			.build();
-		trackingRecordRepository.save(record);
+		trackingRepository.save(record);
 
 		if (request.status() == TrackingStatus.RESOLVED) {
 			GreenroomTicketResolvedEvent event = new GreenroomTicketResolvedEvent(
@@ -74,7 +74,7 @@ public class TicketTrackingService {
 		validateOwner(ticket, userId);
 
 		LocalDate baseDate = ticket.getCreatedAt().toLocalDate();
-		return trackingRecordRepository.findByTicketIdOrderByCreatedAtDesc(ticketId)
+		return trackingRepository.findByTicketIdOrderByCreatedAtDesc(ticketId)
 			.stream()
 			.map(record -> {
 				long days = ChronoUnit.DAYS.between(baseDate, record.getCreatedAt().toLocalDate());
@@ -137,7 +137,7 @@ public class TicketTrackingService {
 	}
 
 	private void validateAlreadyResolved(UUID ticketId) {
-		if (trackingRecordRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)) {
+		if (trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)) {
 			throw new CustomException(ErrorCode.ALREADY_RESOLVED_TICKET);
 		}
 	}

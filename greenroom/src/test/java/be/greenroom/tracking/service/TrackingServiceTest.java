@@ -29,26 +29,26 @@ import be.greenroom.ticket.domain.Ticket;
 import be.greenroom.ticket.repository.TicketRepository;
 import be.greenroom.tracking.domain.ResolvedHelpType;
 import be.greenroom.tracking.domain.ResolvedStateType;
-import be.greenroom.tracking.domain.TrackingRecord;
+import be.greenroom.tracking.domain.Tracking;
 import be.greenroom.tracking.domain.TrackingStatus;
 import be.greenroom.tracking.domain.UnresolvedBlockerType;
 import be.greenroom.tracking.domain.UnresolvedNeedType;
 import be.greenroom.tracking.dto.request.CreateTrackingRequest;
 import be.greenroom.tracking.dto.response.TrackingHistoryItemResponse;
-import be.greenroom.tracking.repository.TrackingRecordRepository;
+import be.greenroom.tracking.repository.TrackingRepository;
 
 @ExtendWith(MockitoExtension.class)
-class TicketTrackingServiceTest {
+class TrackingServiceTest {
 
 	@Mock
 	private TicketRepository ticketRepository;
 	@Mock
-	private TrackingRecordRepository trackingRecordRepository;
+	private TrackingRepository trackingRepository;
 	@Mock
 	private GreenroomNotificationEventPublisher eventPublisher;
 
 	@InjectMocks
-	private TicketTrackingService ticketTrackingService;
+	private TrackingService trackingService;
 
 	@Test
 	@DisplayName("해결 트래킹 등록 시 해결 이벤트를 발행한다")
@@ -59,8 +59,8 @@ class TicketTrackingServiceTest {
 		Ticket ticket = Ticket.create(userId, "n", "s", "t", "a", "c");
 		ReflectionTestUtils.setField(ticket, "id", ticketId);
 		when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
-		when(trackingRecordRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(false);
-		when(trackingRecordRepository.save(any(TrackingRecord.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(false);
+		when(trackingRepository.save(any(Tracking.class))).thenAnswer(invocation -> invocation.getArgument(0));
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.RESOLVED,
 			ResolvedHelpType.DIALOGUE_AND_EXPRESSION,
@@ -73,7 +73,7 @@ class TicketTrackingServiceTest {
 		);
 
 		// when
-		ticketTrackingService.create(userId, ticketId, request);
+		trackingService.create(userId, ticketId, request);
 
 		// then
 		ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
@@ -90,8 +90,8 @@ class TicketTrackingServiceTest {
 		Ticket ticket = Ticket.create(userId, "n", "s", "t", "a", "c");
 		ReflectionTestUtils.setField(ticket, "id", ticketId);
 		when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
-		when(trackingRecordRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(false);
-		when(trackingRecordRepository.save(any(TrackingRecord.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		when(trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(false);
+		when(trackingRepository.save(any(Tracking.class))).thenAnswer(invocation -> invocation.getArgument(0));
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.UNRESOLVED,
 			null,
@@ -104,7 +104,7 @@ class TicketTrackingServiceTest {
 		);
 
 		// when
-		ticketTrackingService.create(userId, ticketId, request);
+		trackingService.create(userId, ticketId, request);
 
 		// then
 		verify(eventPublisher, never()).publish(any(), any());
@@ -119,7 +119,7 @@ class TicketTrackingServiceTest {
 		Ticket ticket = Ticket.create(userId, "n", "s", "t", "a", "c");
 		ReflectionTestUtils.setField(ticket, "id", ticketId);
 		when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
-		when(trackingRecordRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(false);
+		when(trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(false);
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.RESOLVED,
 			ResolvedHelpType.DIALOGUE_AND_EXPRESSION,
@@ -132,7 +132,7 @@ class TicketTrackingServiceTest {
 		);
 
 		// when then
-		assertThatThrownBy(() -> ticketTrackingService.create(userId, ticketId, request))
+		assertThatThrownBy(() -> trackingService.create(userId, ticketId, request))
 			.isInstanceOf(CustomException.class);
 	}
 
@@ -145,7 +145,7 @@ class TicketTrackingServiceTest {
 		Ticket ticket = Ticket.create(userId, "n", "s", "t", "a", "c");
 		ReflectionTestUtils.setField(ticket, "id", ticketId);
 		when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
-		when(trackingRecordRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(true);
+		when(trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(true);
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.UNRESOLVED,
 			null,
@@ -158,7 +158,7 @@ class TicketTrackingServiceTest {
 		);
 
 		// when then
-		assertThatThrownBy(() -> ticketTrackingService.create(userId, ticketId, request))
+		assertThatThrownBy(() -> trackingService.create(userId, ticketId, request))
 			.isInstanceOf(CustomException.class)
 			.extracting(e -> ((CustomException)e).getErrorCode())
 			.isEqualTo(ErrorCode.ALREADY_RESOLVED_TICKET);
@@ -175,7 +175,7 @@ class TicketTrackingServiceTest {
 		ReflectionTestUtils.setField(ticket, "createdAt", LocalDateTime.of(2026, 3, 1, 10, 0));
 		when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
 
-		TrackingRecord first = TrackingRecord.builder()
+		Tracking first = Tracking.builder()
 			.ticketId(ticketId)
 			.userId(userId)
 			.status(TrackingStatus.UNRESOLVED)
@@ -185,7 +185,7 @@ class TicketTrackingServiceTest {
 			.build();
 		ReflectionTestUtils.setField(first, "createdAt", LocalDateTime.of(2026, 3, 8, 8, 30));
 
-		TrackingRecord second = TrackingRecord.builder()
+		Tracking second = Tracking.builder()
 			.ticketId(ticketId)
 			.userId(userId)
 			.status(TrackingStatus.RESOLVED)
@@ -194,11 +194,11 @@ class TicketTrackingServiceTest {
 			.build();
 		ReflectionTestUtils.setField(second, "createdAt", LocalDateTime.of(2026, 3, 2, 8, 30));
 
-		when(trackingRecordRepository.findByTicketIdOrderByCreatedAtDesc(ticketId))
+		when(trackingRepository.findByTicketIdOrderByCreatedAtDesc(ticketId))
 			.thenReturn(List.of(first, second));
 
 		// when
-		List<TrackingHistoryItemResponse> result = ticketTrackingService.getHistory(userId, ticketId);
+		List<TrackingHistoryItemResponse> result = trackingService.getHistory(userId, ticketId);
 
 		// then
 		assertThat(result).hasSize(2);
