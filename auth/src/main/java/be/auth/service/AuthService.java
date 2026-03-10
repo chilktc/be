@@ -51,12 +51,9 @@ public class AuthService {
 	}
 
 	public LoginResult refresh(String refreshToken) {
-		UUID userId;
-		try {
-			userId = jwtService.parseId(refreshToken);
-		} catch (JwtException | IllegalArgumentException e) {
-			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
-		}
+		jwtService.validate(refreshToken);
+
+		UUID userId = jwtService.parseId(refreshToken);
 
 		if (!refreshTokenService.isSame(userId, refreshToken)) {
 			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
@@ -90,6 +87,7 @@ public class AuthService {
 
 		try {
 			if (accessToken != null) {
+				jwtService.validate(accessToken);
 				String jti = jwtService.parseJti(accessToken);
 				var exp = jwtService.parseExpiration(accessToken);
 
