@@ -14,8 +14,14 @@ public enum ErrorCode {
 	DOES_NOT_EXIST_TICKET(HttpStatus.BAD_REQUEST, "존재하지 않는 티켓 id입니다."),
 	NO_TICKET_ACCESS(HttpStatus.FORBIDDEN, "해당 티켓에 접근 권한이 없습니다."),
 	ALREADY_RESOLVED_TICKET(HttpStatus.BAD_REQUEST, "이미 해결된 티켓입니다."),
-	INVALID_TRACKING_REQUEST(HttpStatus.BAD_REQUEST, "트래킹 요청 상태에 맞지 않는 필드입니다."),
-	TRACKING_ETC_CONTENT_REQUIRED(HttpStatus.BAD_REQUEST, "ETC 선택 시 기타 입력값이 필요합니다."),
+	TRACKING_RESOLVED_FIELDS_REQUIRED(HttpStatus.BAD_REQUEST, "해결 상태에서는 해결 필드가 필수입니다."),
+	TRACKING_UNRESOLVED_FIELDS_REQUIRED(HttpStatus.BAD_REQUEST, "미해결 상태에서는 미해결 필드가 필수입니다."),
+	TRACKING_RESOLVED_FIELDS_FORBIDDEN(HttpStatus.BAD_REQUEST, "미해결 상태에서는 해결 필드를 보낼 수 없습니다."),
+	TRACKING_UNRESOLVED_FIELDS_FORBIDDEN(HttpStatus.BAD_REQUEST, "해결 상태에서는 미해결 필드를 보낼 수 없습니다."),
+	TRACKING_RESOLVED_ETC_REQUIRED(HttpStatus.BAD_REQUEST, "해결 도움 항목이 ETC면 resolvedHelpOther가 필요합니다."),
+	TRACKING_UNRESOLVED_ETC_REQUIRED(HttpStatus.BAD_REQUEST, "미해결 걸림돌 항목이 ETC면 unresolvedBlockerOther가 필요합니다."),
+	TRACKING_RESOLVED_ETC_FORBIDDEN(HttpStatus.BAD_REQUEST, "해결 도움 항목이 ETC가 아니면 resolvedHelpOther를 보낼 수 없습니다."),
+	TRACKING_UNRESOLVED_ETC_FORBIDDEN(HttpStatus.BAD_REQUEST, "미해결 걸림돌 항목이 ETC가 아니면 unresolvedBlockerOther를 보낼 수 없습니다."),
 	;
 	private final HttpStatus status;
 	private final String message;

@@ -11,15 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import be.common.api.CustomException;
 import be.common.api.ErrorCode;
+import be.common.utils.Preconditions;
 import be.greenroom.notification.event.GreenroomNotificationEventType;
 import be.greenroom.notification.event.GreenroomTicketResolvedEvent;
 import be.greenroom.notification.service.GreenroomNotificationEventPublisher;
 import be.greenroom.ticket.domain.Ticket;
 import be.greenroom.ticket.repository.TicketRepository;
-import be.greenroom.tracking.domain.ResolvedHelpType;
 import be.greenroom.tracking.domain.Tracking;
 import be.greenroom.tracking.domain.TrackingStatus;
-import be.greenroom.tracking.domain.UnresolvedBlockerType;
 import be.greenroom.tracking.dto.request.CreateTrackingRequest;
 import be.greenroom.tracking.dto.response.TrackingHistoryItemResponse;
 import be.greenroom.tracking.repository.TrackingRepository;
@@ -32,6 +31,7 @@ public class TrackingService {
 	private final TicketRepository ticketRepository;
 	private final TrackingRepository trackingRepository;
 	private final GreenroomNotificationEventPublisher eventPublisher;
+	private final TrackingRequestValidator trackingRequestValidator;
 
 	@Transactional
 	public void create(UUID userId, UUID ticketId, CreateTrackingRequest request) {
@@ -39,7 +39,7 @@ public class TrackingService {
 			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
 		validateOwner(ticket, userId);
 		validateAlreadyResolved(ticketId);
-		validateRequest(request);
+		trackingRequestValidator.validate(request);
 
 		Tracking record = Tracking.builder()
 			.ticketId(ticketId)
@@ -93,52 +93,10 @@ public class TrackingService {
 	}
 
 	private void validateOwner(Ticket ticket, UUID userId) {
-		if (!ticket.getUserId().equals(userId)) {
-			throw new CustomException(ErrorCode.NO_TICKET_ACCESS);
-		}
-	}
-
-	private void validateRequest(CreateTrackingRequest request) {
-		if (request.status() == TrackingStatus.RESOLVED) {
-			boolean hasResolved = request.resolvedHelpType() != null && request.resolvedStateType() != null;
-			boolean hasUnresolved = request.unresolvedBlockerType() != null
-				|| request.unresolvedBlockerOther() != null
-				|| request.unresolvedNeedType() != null;
-			if (!hasResolved || hasUnresolved) {
-				throw new CustomException(ErrorCode.INVALID_TRACKING_REQUEST);
-			}
-			if (request.resolvedHelpType() == ResolvedHelpType.ETC
-				&& (request.resolvedHelpOther() == null || request.resolvedHelpOther().isBlank())) {
-				throw new CustomException(ErrorCode.TRACKING_ETC_CONTENT_REQUIRED);
-			}
-			if (request.resolvedHelpType() != ResolvedHelpType.ETC && request.resolvedHelpOther() != null) {
-				throw new CustomException(ErrorCode.INVALID_TRACKING_REQUEST);
-			}
-			return;
-		}
-
-		if (request.status() == TrackingStatus.UNRESOLVED) {
-			boolean hasResolved = request.resolvedHelpType() != null
-				|| request.resolvedHelpOther() != null
-				|| request.resolvedStateType() != null;
-			boolean hasUnresolved = request.unresolvedBlockerType() != null && request.unresolvedNeedType() != null;
-			if (hasResolved || !hasUnresolved) {
-				throw new CustomException(ErrorCode.INVALID_TRACKING_REQUEST);
-			}
-			if (request.unresolvedBlockerType() == UnresolvedBlockerType.ETC
-				&& (request.unresolvedBlockerOther() == null || request.unresolvedBlockerOther().isBlank())) {
-				throw new CustomException(ErrorCode.TRACKING_ETC_CONTENT_REQUIRED);
-			}
-			if (request.unresolvedBlockerType() != UnresolvedBlockerType.ETC
-				&& request.unresolvedBlockerOther() != null) {
-				throw new CustomException(ErrorCode.INVALID_TRACKING_REQUEST);
-			}
-		}
+		Preconditions.validate(ticket.getUserId().equals(userId), ErrorCode.NO_TICKET_ACCESS);
 	}
 
 	private void validateAlreadyResolved(UUID ticketId) {
-		if (trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)) {
-			throw new CustomException(ErrorCode.ALREADY_RESOLVED_TICKET);
-		}
+		Preconditions.validate(!trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED), ErrorCode.ALREADY_RESOLVED_TICKET);
 	}
 }

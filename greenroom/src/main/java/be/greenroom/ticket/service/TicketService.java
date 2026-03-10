@@ -14,7 +14,6 @@ import be.common.utils.Preconditions;
 import be.greenroom.notification.service.GreenroomNotificationEventPublisher;
 import be.greenroom.notification.event.GreenroomNotificationEventType;
 import be.greenroom.notification.event.GreenroomTicketCreatedEvent;
-import be.greenroom.notification.event.GreenroomTicketResolvedEvent;
 import be.greenroom.ticket.domain.Ticket;
 import be.greenroom.ticket.dto.request.CreateTicketRequest;
 import be.greenroom.ticket.dto.response.TicketPreviewPageResponse;
@@ -94,7 +93,7 @@ public class TicketService {
 	public TicketResponse getTicket(UUID userId, UUID ticketId){
 		Ticket ticket = ticketRepository.findById(ticketId)
 			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
-		Preconditions.validate(!userId.equals(ticket.getUserId()), ErrorCode.NO_TICKET_ACCESS);
+		Preconditions.validate(userId.equals(ticket.getUserId()), ErrorCode.NO_TICKET_ACCESS);
 		return TicketResponse.from(ticket);
 	}
 }
