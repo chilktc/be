@@ -27,7 +27,12 @@ public enum ErrorCode {
 	INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "닉네임을 입력하세요."),
 	ALREADY_CONSENTED(HttpStatus.BAD_REQUEST, "이미 동의가 완료된 사용자입니다."),
 	PRIVACY_NOT_AGREED(HttpStatus.BAD_REQUEST, "개인정보 수집 및 이용에 동의해야 합니다."),
-	USER_DISABLED(HttpStatus.FORBIDDEN, "사용이 중지된 계정입니다.")
+	USER_DISABLED(HttpStatus.FORBIDDEN, "사용이 중지된 계정입니다."),
+	JWT_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
+	JWT_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+	JWT_INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "JWT 서명이 올바르지 않습니다."),
+	JWT_UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "지원되지 않는 토큰입니다."),
+	JWT_EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 존재하지 않습니다.")
 	,;
 	private final HttpStatus status;
 	private final String message;
