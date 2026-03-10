@@ -9,7 +9,9 @@ import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
@@ -25,13 +27,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
 				.getHeaders()
 				.getFirst("Authorization");
 
-			if (token == null) {
-				var cookies = exchange.getRequest().getCookies().getFirst("accessToken");
-				if (cookies != null) {
-					token = cookies.getValue();
-				}
-			}
-
 			// 토큰이 없을 경우 401 Unauthorized로 응답
 			if (token == null) {
 				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -45,11 +40,25 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
 
 			// 정상 로직 -> SecretKey로 토큰 검증 및 Payload(userId 담겨있음) 가져오기
 			SecretKey secretKey = jwtProperties.getSecret();
-			Claims claims = Jwts.parser()
-				.verifyWith(secretKey)
-				.build()
-				.parseSignedClaims(token)
-				.getPayload();
+			Claims claims;
+			try {
+				claims = Jwts.parser()
+					.verifyWith(secretKey)
+					.build()
+					.parseSignedClaims(token)
+					.getPayload();
+			} catch (io.jsonwebtoken.ExpiredJwtException e) {
+				log.warn("JWT expired: {}", e.getMessage());
+
+				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+				return exchange.getResponse().setComplete();
+
+			} catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+				log.warn("JWT validation failed: {}", e.getMessage());
+
+				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+				return exchange.getResponse().setComplete();
+			}
 
 			String jti = claims.getId();
 			if (jti != null && blacklistService.isExist(jti)) {
