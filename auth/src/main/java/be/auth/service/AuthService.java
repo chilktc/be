@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import be.auth.domain.OauthProvider;
 import be.auth.domain.User;
+import be.auth.dto.response.MeResponse;
 import be.auth.jwt.JwtService;
 import be.auth.jwt.Role;
 import be.auth.jwt.TokenType;
@@ -118,4 +119,19 @@ public class AuthService {
 		userRepository.save(user);
 	}
 
+	public MeResponse getMe(UUID userId) {
+
+		var user = userRepository.findByIdOrThrow(userId, ErrorCode.NOT_FOUND_USER);
+
+		if (!user.isActive()) {
+			throw new CustomException(ErrorCode.USER_DISABLED);
+		}
+
+		return new MeResponse(
+			user.getId(),
+			user.getEmail(),
+			user.getNickname(),
+			user.isFirstLogin()
+		);
+	}
 }
