@@ -72,7 +72,7 @@ public class GoogleOauthController {
 
 	@Operation(
 		summary = "소셜 로그아웃",
-		security = @SecurityRequirement(name = "bearerAuth"),
+		security = @SecurityRequirement(name = "Access Token"),
 		description = "토큰을 만료시키고 로그아웃합니다."
 	)
 	@PostMapping("/logout")
