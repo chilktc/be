@@ -1,0 +1,39 @@
+name: be-cd
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Package with Gradle
+        run: |
+          chmod +x ./gradlew || true
+          ./gradlew --no-daemon clean build -x test
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST_BE }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/be-app
+            git pull origin main
+            
+            APP_NAME="be-app.jar"
+            PID=$(pgrep -f $APP_NAME)
+            if [ -n "$PID" ]; then kill -15 $PID; sleep 5; fi
+            nohup java -jar build/libs/$APP_NAME > app.log 2>&1 &
