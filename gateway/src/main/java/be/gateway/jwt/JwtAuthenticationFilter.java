@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,15 +30,13 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
 				.getFirst("Authorization");
 
 			// 토큰이 없을 경우 401 Unauthorized로 응답
-			if (token == null) {
+			if (token == null || !token.startsWith("Bearer ")) {
 				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
 				return exchange.getResponse().setComplete();
 			}
 
 			// Bearer 토큰 시 처리
-			if (token.startsWith("Bearer ")) {
-				token = token.substring(7);
-			}
+			token = token.substring(7);
 
 			// 정상 로직 -> SecretKey로 토큰 검증 및 Payload(userId 담겨있음) 가져오기
 			SecretKey secretKey = jwtProperties.getSecret();
@@ -47,13 +47,13 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
 					.build()
 					.parseSignedClaims(token)
 					.getPayload();
-			} catch (io.jsonwebtoken.ExpiredJwtException e) {
+			} catch (ExpiredJwtException e) {
 				log.warn("JWT expired: {}", e.getMessage());
 
 				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
 				return exchange.getResponse().setComplete();
 
-			} catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+			} catch (JwtException | IllegalArgumentException e) {
 				log.warn("JWT validation failed: {}", e.getMessage());
 
 				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -66,13 +66,25 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
 				return exchange.getResponse().setComplete();
 			}
 
-			String userId = claims.getSubject();
-			String role = claims.get("role", String.class);
 			String tokenType = claims.get("token_type", String.class);
-
 			// accesstoken만 진행
 			if (!"access".equals(tokenType)) {
 				exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+				return exchange.getResponse().setComplete();
+			}
+
+			String userId = claims.getSubject();
+			String role = claims.get("role", String.class);
+
+			Boolean firstLogin = claims.get("first_login", Boolean.class);
+			String path = exchange.getRequest().getURI().getPath();
+
+			if (Boolean.TRUE.equals(firstLogin)
+				&& !path.startsWith("/auth/me")
+				&& !path.startsWith("/auth/consent")
+				&& !path.startsWith("/auth/logout")) {
+
+				exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
 				return exchange.getResponse().setComplete();
 			}
 
