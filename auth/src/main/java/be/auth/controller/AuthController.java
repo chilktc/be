@@ -25,6 +25,7 @@ import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 import be.common.docs.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -159,6 +160,7 @@ public class AuthController {
 	})
 	@GetMapping("/me")
 	public ApiResult<MeResponse> me(
+		@Parameter(hidden = true)
 		@RequestHeader(value = "X-User-Id", required = false) UUID userId
 	) {
 		if (userId == null) {
