@@ -55,6 +55,7 @@ services:
       - mysql
       - redis
       - db_schema_apply
+      - kafka
     ports:
       - "8081:8081"
     env_file:
@@ -67,6 +68,7 @@ services:
       - DB_PASSWORD=auth
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - kafka.servers=kafka:9092
 
   greenroom:
     build:
