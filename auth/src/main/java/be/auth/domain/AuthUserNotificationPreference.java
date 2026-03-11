@@ -1,4 +1,4 @@
-package be.greenroom.notification.domain;
+package be.auth.domain;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,10 +14,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "user_notification_preference")
+@Table(name = "auth_user_notification_preference")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserNotificationPreference {
+public class AuthUserNotificationPreference {
 
 	@Id
 	@Column(name = "user_id", nullable = false, updatable = false)
@@ -32,8 +32,8 @@ public class UserNotificationPreference {
 	@Column(name = "updated_at", nullable = false)
 	private LocalDateTime updatedAt;
 
-	public static UserNotificationPreference create(UUID userId, boolean enabled) {
-		UserNotificationPreference preference = new UserNotificationPreference();
+	public static AuthUserNotificationPreference create(UUID userId, boolean enabled) {
+		AuthUserNotificationPreference preference = new AuthUserNotificationPreference();
 		preference.userId = userId;
 		preference.enabled = enabled;
 		return preference;

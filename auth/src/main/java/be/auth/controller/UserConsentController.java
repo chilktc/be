@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import be.auth.dto.request.ConsentRequest;
+import be.auth.service.AuthNotificationPreferenceService;
 import be.auth.service.UserConsentService;
 import be.common.api.ApiResult;
 import be.common.api.ErrorCode;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/auth")
 public class UserConsentController {
 	private final UserConsentService userConsentService;
+	private final AuthNotificationPreferenceService authNotificationPreferenceService;
 
 	@Operation(
 		summary = "개인정보 동의 및 최초 로그인 완료",
@@ -46,6 +48,7 @@ public class UserConsentController {
 	) {
 
 		userConsentService.completeFirstLogin(UUID.fromString(userIdHeader), request);
+		authNotificationPreferenceService.initializeAndPublish(UUID.fromString(userIdHeader));
 
 		return ApiResult.ok();
 	}

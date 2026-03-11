@@ -1,4 +1,4 @@
-package be.greenroom.notification.event;
+package be.auth.notification.event;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
