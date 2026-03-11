@@ -89,8 +89,8 @@ public class GoogleOauthService {
 		var accessExp = jwtService.getAccessExpiration();
 		var refreshExp = jwtService.getRefreshExpiration();
 
-		var accessToken = jwtService.issue(user.getId(), user.getRole(), accessExp, TokenType.ACCESS_TOKEN.getType());
-		var refreshToken = jwtService.issue(user.getId(), user.getRole(), refreshExp, TokenType.REFRESH_TOKEN.getType());
+		var accessToken = jwtService.issue(user.getId(), user.getRole(), accessExp, TokenType.ACCESS_TOKEN.getType(), user.isFirstLogin());
+		var refreshToken = jwtService.issue(user.getId(), user.getRole(), refreshExp, TokenType.REFRESH_TOKEN.getType(), user.isFirstLogin());
 
 		long refreshTtlMs = refreshExp.getTime() - System.currentTimeMillis();
 		refreshTokenService.save(user.getId(), refreshToken, refreshTtlMs);

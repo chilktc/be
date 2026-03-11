@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class JwtService {
 	private final JwtProperties jwtProperties;
 
-	public String issue(UUID id, Role role, Date expiration, String tokenType) {
+	public String issue(UUID id, Role role, Date expiration, String tokenType, boolean firstLogin) {
 
 		return Jwts
 			.builder()
@@ -29,6 +29,7 @@ public class JwtService {
 			.subject(id.toString())
 			.claim("role", role.name())
 			.claim("token_type", tokenType)
+			.claim("first_login", firstLogin)
 			.id(UUID.randomUUID().toString())
 			.issuedAt(new Date())
 			.expiration(expiration)

@@ -42,8 +42,8 @@ public class AuthService {
 		var accessExp = jwtService.getAccessExpiration();
 		var refreshExp = jwtService.getRefreshExpiration();
 
-		var accessToken = jwtService.issue(user.getId(), user.getRole(), accessExp, TokenType.ACCESS_TOKEN.getType());
-		var refreshToken = jwtService.issue(user.getId(), user.getRole(), refreshExp, TokenType.REFRESH_TOKEN.getType());
+		var accessToken = jwtService.issue(user.getId(), user.getRole(), accessExp, TokenType.ACCESS_TOKEN.getType(), user.isFirstLogin());
+		var refreshToken = jwtService.issue(user.getId(), user.getRole(), refreshExp, TokenType.REFRESH_TOKEN.getType(), user.isFirstLogin());
 
 		long refreshTtlMs = refreshExp.getTime() - System.currentTimeMillis();
 		refreshTokenService.save(user.getId(), refreshToken, refreshTtlMs);
@@ -67,8 +67,8 @@ public class AuthService {
 		var newAccessExp = jwtService.getAccessExpiration();
 		var newRefreshExp = jwtService.getRefreshExpiration();
 
-		var newAccessToken = jwtService.issue(user.getId(), user.getRole(), newAccessExp, TokenType.ACCESS_TOKEN.getType());
-		var newRefreshToken = jwtService.issue(user.getId(), user.getRole(), newRefreshExp, TokenType.REFRESH_TOKEN.getType());
+		var newAccessToken = jwtService.issue(user.getId(), user.getRole(), newAccessExp, TokenType.ACCESS_TOKEN.getType(), user.isFirstLogin());
+		var newRefreshToken = jwtService.issue(user.getId(), user.getRole(), newRefreshExp, TokenType.REFRESH_TOKEN.getType(), user.isFirstLogin());
 
 		long newRefreshTtlMs = newRefreshExp.getTime() - System.currentTimeMillis();
 		refreshTokenService.save(user.getId(), newRefreshToken, newRefreshTtlMs);
