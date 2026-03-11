@@ -162,7 +162,7 @@ public class AuthController {
 		@RequestHeader(value = "X-User-Id", required = false) UUID userId
 	) {
 		if (userId == null) {
-			throw new CustomException(ErrorCode.NOT_FOUND_USER);
+			throw new CustomException(ErrorCode.JWT_INVALID_TOKEN);
 		}
 		return ApiResult.ok(authService.getMe(userId));
 	}
