@@ -1,0 +1,43 @@
+name: CD - Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            cd ~/app
+
+            # Log in to GHCR using a PAT stored as a repository secret
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+            # Pull latest images for all app services
+            docker compose -f docker-compose.infra.yml -f docker-compose.prod.yml pull auth greenroom notification gateway
+
+            # Rolling restart: one service at a time to minimize downtime
+            for service in auth greenroom notification gateway; do
+              echo "Restarting $service..."
+              docker compose -f docker-compose.infra.yml -f docker-compose.prod.yml up -d --no-deps $service
+              echo "$service restarted."
+            done
+
+            # Remove dangling images to free disk space
+            docker image prune -f
