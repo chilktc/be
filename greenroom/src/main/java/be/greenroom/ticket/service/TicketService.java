@@ -2,6 +2,7 @@ package be.greenroom.ticket.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
@@ -11,6 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 import be.common.utils.Preconditions;
+import be.greenroom.ai.client.AiServerClient;
+import be.greenroom.ai.dto.request.PodcastEpisodeRequest;
+import be.greenroom.ai.dto.request.SessionCloseRequest;
+import be.greenroom.ai.dto.request.SessionCreateRequest;
+import be.greenroom.ai.dto.response.SessionCreateResponse;
 import be.greenroom.notification.service.GreenroomNotificationEventPublisher;
 import be.greenroom.notification.event.GreenroomNotificationEventType;
 import be.greenroom.notification.event.GreenroomTicketCreatedEvent;
@@ -29,31 +35,39 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
 	private final GreenroomNotificationEventPublisher eventPublisher;
+	private final AiServerClient aiServerClient;
 
     @Transactional
     public TicketResponse create(UUID userId, CreateTicketRequest request) {
-		// TODO : AI에게 요청 보내 받아옴
-		// request -> response로 변경되어 AI의 응답을 저장
-        Ticket ticket = Ticket.create(
-            userId,
-			UUID.randomUUID().toString(), // 임시 랜덤 이름
-            request.situation(),
-            request.thought(),
-            request.action(),
-            request.colleagueReaction()
-        );
+		Ticket saved = saveAndPublishTicket(userId, request, UUID.randomUUID().toString());
+		return TicketResponse.from(saved);
+    }
 
-		Ticket saved = ticketRepository.save(ticket);
-		GreenroomTicketCreatedEvent event = new GreenroomTicketCreatedEvent(
-			UUID.randomUUID(),
-			GreenroomNotificationEventType.GREENROOM_TICKET_CREATED.name(),
-			LocalDateTime.now(),
-			saved.getId(),
-			saved.getUserId(),
-			saved.getCreatedAt()
-		);
-		eventPublisher.publish(saved.getUserId().toString(), event);
-        return TicketResponse.from(saved);
+	@Transactional
+	public TicketResponse createWithAi(UUID userId, CreateTicketRequest request) {
+		SessionCreateResponse session = aiServerClient.createSession(new SessionCreateRequest(userId, "podcast"));
+		Preconditions.validate(session != null && session.session_id() != null, ErrorCode.INTERNAL_SERVER_ERROR);
+
+		String sessionId = session.session_id();
+		try {
+			aiServerClient.createPodcastEpisode(
+				new PodcastEpisodeRequest(
+					userId,
+					sessionId,
+					request.situation(),
+					buildDescription(request),
+					Map.of(),
+					Map.of("source", "greenroom")
+				)
+			);
+			Ticket saved = saveAndPublishTicket(userId, request, request.situation());
+			return TicketResponse.from(saved);
+		} finally {
+			aiServerClient.closeSession(
+				sessionId,
+				new SessionCloseRequest(userId, sessionId, "ticket-created")
+			);
+		}
     }
 
 	@Transactional(readOnly = true)
@@ -95,5 +109,34 @@ public class TicketService {
 			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
 		Preconditions.validate(userId.equals(ticket.getUserId()), ErrorCode.NO_TICKET_ACCESS);
 		return TicketResponse.from(ticket);
+	}
+
+	private Ticket saveAndPublishTicket(UUID userId, CreateTicketRequest request, String ticketName) {
+		Ticket ticket = Ticket.create(
+			userId,
+			ticketName,
+			request.situation(),
+			request.thought(),
+			request.action(),
+			request.colleagueReaction()
+		);
+
+		Ticket saved = ticketRepository.save(ticket);
+		GreenroomTicketCreatedEvent event = new GreenroomTicketCreatedEvent(
+			UUID.randomUUID(),
+			GreenroomNotificationEventType.GREENROOM_TICKET_CREATED.name(),
+			LocalDateTime.now(),
+			saved.getId(),
+			saved.getUserId(),
+			saved.getCreatedAt()
+		);
+		eventPublisher.publish(saved.getUserId().toString(), event);
+		return saved;
+	}
+
+	private String buildDescription(CreateTicketRequest request) {
+		return "thought: " + request.thought()
+			+ "\naction: " + request.action()
+			+ "\ncolleagueReaction: " + (request.colleagueReaction() == null ? "" : request.colleagueReaction());
 	}
 }
