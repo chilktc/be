@@ -11,7 +11,6 @@ permissions:
   packages: write
 
 env:
-  REGISTRY: ghcr.io
   IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
 
 jobs:
@@ -25,8 +24,7 @@ jobs:
       notification: ${{ steps.filter.outputs.notification }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Detect changed services
         id: filter
@@ -41,9 +39,49 @@ jobs:
               - 'greenroom/**'
             notification:
               - 'notification/**'
+  
+
+  test:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Run auth tests
+        run: |
+          cd auth
+          chmod +x gradlew
+          ./gradlew test
+
+      - name: Run gateway tests
+        run: |
+          cd gateway
+          chmod +x gradlew
+          ./gradlew test
+
+      - name: Run greenroom tests
+        run: |
+          cd greenroom
+          chmod +x gradlew
+          ./gradlew test
+
+      - name: Run notification tests
+        run: |
+          cd notification
+          chmod +x gradlew
+          ./gradlew test
+  
 
   build-auth:
-    needs: detect-changes
+    needs: [detect-changes, test]
     if: needs.detect-changes.outputs.auth == 'true'
     runs-on: ubuntu-latest
 
@@ -52,7 +90,6 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: Login GHCR
-        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -67,8 +104,9 @@ jobs:
         run: docker push $IMAGE_PREFIX/auth:latest
 
 
+
   build-gateway:
-    needs: detect-changes
+    needs: [detect-changes, test]
     if: needs.detect-changes.outputs.gateway == 'true'
     runs-on: ubuntu-latest
 
@@ -77,7 +115,6 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: Login GHCR
-        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -92,8 +129,9 @@ jobs:
         run: docker push $IMAGE_PREFIX/gateway:latest
 
 
+
   build-greenroom:
-    needs: detect-changes
+    needs: [detect-changes, test]
     if: needs.detect-changes.outputs.greenroom == 'true'
     runs-on: ubuntu-latest
 
@@ -102,7 +140,6 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: Login GHCR
-        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -118,7 +155,7 @@ jobs:
 
 
   build-notification:
-    needs: detect-changes
+    needs: [detect-changes, test]
     if: needs.detect-changes.outputs.notification == 'true'
     runs-on: ubuntu-latest
 
@@ -127,7 +164,6 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: Login GHCR
-        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
