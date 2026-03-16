@@ -47,13 +47,11 @@ public class ProfileImageService {
 	@Transactional
 	public void changeProfileImage(UUID userId, Long imageId) {
 
-		User user = userRepository.findById(userId)
-			.orElseThrow();
-
 		ProfileImage image = profileImageRepository.findById(imageId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE_IMAGE));
 
-		user.changeImage(image);
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
 		RecentProfileImage recent = recentProfileImageRepository
 			.findByUserIdAndProfileImage_Id(userId, imageId)
@@ -68,6 +66,7 @@ public class ProfileImageService {
 		}
 
 		trimRecentImages(userId);
+		user.changeImage(image);
 	}
 
 	private void trimRecentImages(UUID userId) {
