@@ -17,6 +17,7 @@ import be.common.api.ApiResult;
 import be.common.api.ErrorCode;
 import be.common.docs.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -42,13 +43,13 @@ public class UserConsentController {
 	@PostMapping("/consent")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> consent(
-
-		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
+		@Parameter(hidden = true)
+		@RequestHeader(value = "X-User-Id", required = false) UUID userId,
 		@RequestBody @Valid ConsentRequest request
 	) {
 
-		userConsentService.completeFirstLogin(UUID.fromString(userIdHeader), request);
-		authNotificationPreferenceService.initializeAndPublish(UUID.fromString(userIdHeader));
+		userConsentService.completeFirstLogin(userId, request);
+		authNotificationPreferenceService.initializeAndPublish(userId);
 
 		return ApiResult.ok();
 	}
