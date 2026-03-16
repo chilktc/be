@@ -8,6 +8,8 @@ import be.auth.dto.response.ProfileImageListResponse;
 import be.auth.repository.ProfileImageRepository;
 import be.auth.repository.RecentProfileImageRepository;
 import be.auth.repository.UserRepository;
+import be.common.api.CustomException;
+import be.common.api.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +51,7 @@ public class ProfileImageService {
 			.orElseThrow();
 
 		ProfileImage image = profileImageRepository.findById(imageId)
-			.orElseThrow();
+			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PROFILE_IMAGE));
 
 		user.changeImage(image);
 
