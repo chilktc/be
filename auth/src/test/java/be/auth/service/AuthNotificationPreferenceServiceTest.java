@@ -14,9 +14,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import be.auth.domain.AuthUserNotificationPreference;
+import be.auth.domain.User;
 import be.auth.dto.response.NotificationPreferenceResponse;
 import be.auth.notification.service.AuthNotificationEventPublisher;
 import be.auth.repository.AuthUserNotificationPreferenceRepository;
+import be.auth.repository.UserRepository;
 
 class AuthNotificationPreferenceServiceTest {
 
@@ -25,9 +27,12 @@ class AuthNotificationPreferenceServiceTest {
 	);
 	private final AuthNotificationEventPublisher eventPublisher = mock(AuthNotificationEventPublisher.class);
 
+	private final UserRepository userRepository = mock(UserRepository.class);
+
 	private final AuthNotificationPreferenceService service = new AuthNotificationPreferenceService(
 		preferenceRepository,
-		eventPublisher
+		eventPublisher,
+		userRepository
 	);
 
 	@Test
@@ -35,6 +40,9 @@ class AuthNotificationPreferenceServiceTest {
 	void 조회시_정보없으면_true반환() {
 		// given
 		UUID userId = UUID.randomUUID();
+		User user = mock(User.class);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 		when(preferenceRepository.findById(userId)).thenReturn(Optional.empty());
 
 		// when
@@ -49,7 +57,10 @@ class AuthNotificationPreferenceServiceTest {
 	void 토글시_true를_false로_변경하고_이벤트발행() {
 		// given
 		UUID userId = UUID.randomUUID();
+		User user = mock(User.class);
 		AuthUserNotificationPreference preference = AuthUserNotificationPreference.create(userId, true);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 		when(preferenceRepository.findById(userId)).thenReturn(Optional.of(preference));
 
 		// when
@@ -66,6 +77,9 @@ class AuthNotificationPreferenceServiceTest {
 	void 토글시_없으면_true생성후_false_이벤트발행() {
 		// given
 		UUID userId = UUID.randomUUID();
+		User user = mock(User.class);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 		when(preferenceRepository.findById(userId)).thenReturn(Optional.empty());
 
 		// when
@@ -82,6 +96,9 @@ class AuthNotificationPreferenceServiceTest {
 	void 초기화시_없으면_true저장_이벤트발행() {
 		// given
 		UUID userId = UUID.randomUUID();
+		User user = mock(User.class);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 		when(preferenceRepository.findById(userId)).thenReturn(Optional.empty());
 
 		// when
@@ -97,6 +114,9 @@ class AuthNotificationPreferenceServiceTest {
 	void 초기화시_기존값유지_이벤트발행() {
 		// given
 		UUID userId = UUID.randomUUID();
+		User user = mock(User.class);
+
+		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 		AuthUserNotificationPreference preference = AuthUserNotificationPreference.create(userId, false);
 		when(preferenceRepository.findById(userId)).thenReturn(Optional.of(preference));
 
