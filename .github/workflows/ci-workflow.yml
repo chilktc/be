@@ -150,6 +150,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build image
+        if: github.event_name == 'push'
         run: docker build -t $IMAGE_PREFIX/auth:latest ./auth
 
       - name: Push image
@@ -182,6 +183,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build image
+        if: github.event_name == 'push'
         run: docker build -t $IMAGE_PREFIX/gateway:latest ./gateway
 
       - name: Push image
@@ -215,6 +217,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build image
+        if: github.event_name == 'push'
         run: docker build -t $IMAGE_PREFIX/greenroom:latest ./greenroom
 
       - name: Push image
@@ -246,6 +249,7 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build image
+        if: github.event_name == 'push'
         run: docker build -t $IMAGE_PREFIX/notification:latest ./notification
 
       - name: Push image
