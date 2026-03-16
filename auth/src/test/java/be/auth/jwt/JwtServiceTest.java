@@ -32,7 +32,8 @@ class JwtServiceTest {
 			UUID.randomUUID(),
 			Role.USER,
 			new Date(System.currentTimeMillis() - 1000),
-			TokenType.ACCESS_TOKEN.getType()
+			TokenType.ACCESS_TOKEN.getType(),
+			false
 		);
 
 		CustomException e = assertThrows(
@@ -51,7 +52,8 @@ class JwtServiceTest {
 			UUID.randomUUID(),
 			Role.USER,
 			new Date(System.currentTimeMillis() + 60000),
-			TokenType.ACCESS_TOKEN.getType()
+			TokenType.ACCESS_TOKEN.getType(),
+			false
 		);
 
 		String tamperedToken = token + "aaa";

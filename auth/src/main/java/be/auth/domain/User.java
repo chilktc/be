@@ -9,7 +9,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -41,8 +45,12 @@ public class User {
 	@Column
 	private String nickname;
 
-	@Column
-	private String image;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(
+		name = "profile_image_id",
+		foreignKey = @ForeignKey(name = "fk_user_profile_image")
+	)
+	private ProfileImage profileImage;
 
 	@Enumerated(EnumType.STRING)
 	private OauthProvider provider;
@@ -68,7 +76,7 @@ public class User {
 		UUID id,
 		String email,
 		String nickname,
-		String image,
+		ProfileImage profileImage,
 		OauthProvider provider,
 		String providerUserId,
 		String password,
@@ -79,7 +87,7 @@ public class User {
 		this.id = id;
 		this.email = email;
 		this.nickname = nickname;
-		this.image = image;
+		this.profileImage = profileImage;
 		this.provider = provider;
 		this.providerUserId = providerUserId;
 		this.password = password;
@@ -162,7 +170,7 @@ public class User {
 		this.nickname = nickname;
 	}
 
-	public void changeImage(String image) {
-		this.image = image;
+	public void changeImage(ProfileImage image) {
+		this.profileImage = image;
 	}
 }

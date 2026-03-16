@@ -2,6 +2,9 @@ server:
   port: 8081
 
 spring:
+  jackson:
+    time-zone: Asia/Seoul
+
   application:
     name: auth
 
@@ -15,6 +18,8 @@ spring:
       ddl-auto: update
     show-sql: true
     open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: Asia/Seoul
 
   data:
     redis:
