@@ -6,8 +6,6 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
-
 @Entity
 @Table(
 	name = "recent_profile_image",
@@ -42,7 +40,6 @@ public class RecentProfileImage {
 	private ProfileImage profileImage;
 
 	@Column(nullable = false)
-	@CreationTimestamp
 	private LocalDateTime usedAt;
 
 	public static RecentProfileImage create(UUID userId, ProfileImage profileImage) {
