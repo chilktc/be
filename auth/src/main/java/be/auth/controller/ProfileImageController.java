@@ -51,7 +51,8 @@ public class ProfileImageController {
 	)
 	@ApiErrorCodeExamples({
 		ErrorCode.JWT_INVALID_TOKEN,
-		ErrorCode.NOT_FOUND_USER
+		ErrorCode.NOT_FOUND_USER,
+		ErrorCode.NOT_FOUND_PROFILE_IMAGE
 	})
 	@PostMapping
 	@ResponseStatus(HttpStatus.OK)
