@@ -8,4 +8,4 @@ services:
     ports:
       - "8082:8082"
     env_file:
-      - .auth.env
+      - .greenroom.env

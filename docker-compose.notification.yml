@@ -8,4 +8,4 @@ services:
     ports:
       - "8083:8083"
     env_file:
-      - .auth.env
+      - .notification.env
