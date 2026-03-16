@@ -60,7 +60,7 @@ public class AuthController {
 			ResponseCookie.from("refreshToken", result.refreshToken())
 				.httpOnly(true)
 				// TODO : 배포 서비스에서는 true를 사용
-				.secure(false)          // HTTPS 환경에서만
+				.secure(true)          // HTTPS 환경에서만
 				.sameSite("Lax")
 				.path("/auth/refresh")
 				.maxAge(Duration.ofDays(14))
