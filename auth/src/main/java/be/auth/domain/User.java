@@ -1,5 +1,6 @@
 package be.auth.domain;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import be.auth.jwt.Role;
@@ -22,11 +23,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import org.hibernate.annotations.SQLRestriction;
+
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@SQLRestriction("is_deleted = false")
 @Table(
-	name = "user",
+	name = "users",
 	uniqueConstraints = {
 		@UniqueConstraint(
 			name = "uk_provider_user",
@@ -70,6 +74,12 @@ public class User {
 
 	@Column(nullable = false)
 	private boolean firstLogin;
+
+	@Column(name = "is_deleted", nullable = false)
+	private boolean isDeleted = false;
+
+	@Column
+	private LocalDateTime deletedAt;
 
 
 	private User(
@@ -173,4 +183,14 @@ public class User {
 	public void changeImage(ProfileImage image) {
 		this.profileImage = image;
 	}
+
+	public void delete() {
+		this.isDeleted = true;
+		this.deletedAt = LocalDateTime.now();
+		this.isActive = false;
+
+		this.email = this.email + "_deleted_" + this.id;
+	}
 }
+
+
