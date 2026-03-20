@@ -35,7 +35,9 @@ public enum ErrorCode {
 	JWT_EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 존재하지 않습니다."),
 	NOTIFICATION_EVENT_SERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "알림 이벤트 직렬화에 실패했습니다."),
 	NOT_FOUND_PROFILE_IMAGE(HttpStatus.NOT_FOUND, "존재하지 않는 프로필 이미지입니다."),
-	ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.")
+	ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+	INVALID_EMAIL(HttpStatus.BAD_REQUEST, "이메일이 일치하지 않습니다."),
+	ALREADY_DELETED_USER(HttpStatus.BAD_REQUEST, "이미 삭제된 회원입니다.")
 	,;
 	private final HttpStatus status;
 	private final String message;
