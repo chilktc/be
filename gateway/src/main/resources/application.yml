@@ -50,7 +50,7 @@ spring:
             - id: auth-jwt
               uri: http://${AUTH_SERVER_HOST:localhost}:${AUTH_SERVER_PORT:8081}
               predicates:
-                - Path=/auth/logout, /auth/me, /auth/consent, /auth/notifications/preference, /auth/profile-images/**, /admin/users/invite,, /auth/withdraw
+                - Path=/auth/logout, /auth/me, /auth/consent, /auth/notifications/preference, /auth/profile-images/**, /admin/users/invite,, /users/me
               filters:
                 - JwtAuthenticationFilter
 

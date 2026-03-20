@@ -37,7 +37,9 @@ public enum ErrorCode {
 	NOT_FOUND_PROFILE_IMAGE(HttpStatus.NOT_FOUND, "존재하지 않는 프로필 이미지입니다."),
 	ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	INVALID_EMAIL(HttpStatus.BAD_REQUEST, "이메일이 일치하지 않습니다."),
-	ALREADY_DELETED_USER(HttpStatus.BAD_REQUEST, "이미 삭제된 회원입니다.")
+	ALREADY_DELETED_USER(HttpStatus.BAD_REQUEST, "이미 삭제된 회원입니다."),
+	INVALID_NICKNAME_FORMAT(HttpStatus.BAD_REQUEST, "닉네임은 영어, 숫자, 한글, 언더스코어만 사용할 수 있습니다."),
+	DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다.")
 	,;
 	private final HttpStatus status;
 	private final String message;
