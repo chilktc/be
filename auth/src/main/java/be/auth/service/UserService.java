@@ -41,10 +41,11 @@ public class UserService {
 	private static final Pattern PATTERN =
 		Pattern.compile("^[a-zA-Z0-9가-힣_]+$");
 
-	public static void validate(String nickname) {
-		if (!PATTERN.matcher(nickname).matches()) {
-			throw new CustomException(ErrorCode.INVALID_NICKNAME_FORMAT);
-		}
+	private void validate(String nickname) {
+		Preconditions.validate(
+			PATTERN.matcher(nickname).matches(),
+			ErrorCode.INVALID_NICKNAME_FORMAT
+		);
 	}
 
 	@Transactional
