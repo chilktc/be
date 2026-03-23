@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 
 @Tag(name = "User 개인정보 동의", description = "최초 로그인 개인정보 동의 API")
@@ -32,12 +31,12 @@ public class UserConsentController {
 	private final AuthNotificationPreferenceService authNotificationPreferenceService;
 
 	@Operation(
-		summary = "개인정보 동의 및 최초 로그인 완료",
-		description = "초대받은 사용자가 개인정보 동의를 완료하면 firstLogin 상태가 해제됩니다."
+		summary = "약관 동의 및 최초 로그인 완료",
+		description = "초대받은 사용자가 약관 동의를 완료하면 firstLogin 상태가 해제됩니다."
 	)
 	@ApiErrorCodeExamples({
 		ErrorCode.ALREADY_CONSENTED,
-		ErrorCode.PRIVACY_NOT_AGREED
+		ErrorCode.REQUIRED_CONSENTS_NOT_AGREED
 	})
 
 	@PostMapping("/consent")
