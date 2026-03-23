@@ -21,12 +21,29 @@ spring:
     properties:
       hibernate.jdbc.time_zone: Asia/Seoul
 
+  #  data:
+  #    redis:
+  #      host: ${REDIS_HOST:localhost}
+  #      port: ${REDIS_PORT:6379}
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      cluster:
+        nodes:
+          - ${REDIS_HOST}:${REDIS_PORT}
+      ssl:
+        enabled: true
+#  kafka:
+#    bootstrap-servers: ${kafka.servers:localhost:29092}
+#    producer:
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
   kafka:
     bootstrap-servers: ${kafka.servers:localhost:29092}
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: AWS_MSK_IAM
+      sasl.jaas.config: software.amazon.msk.auth.iam.IAMLoginModule required;
+      sasl.client.callback.handler.class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer

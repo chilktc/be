@@ -1,0 +1,90 @@
+name: CD - Deploy Greenroom to EC2
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    name: Deploy Greenroom to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Prepare remote directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST_GREENROOM }}
+          port: 22
+          username: ${{ secrets.EC2_USER_GREENROOM }}
+          key: ${{ secrets.EC2_SSH_KEY_GREENROOM }}
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_port: 22
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          debug: true
+          script: |
+            set -e
+            sudo mkdir -p ~/app/greenroom
+            sudo chown -R "$USER":"$USER" ~/app/greenroom
+
+      - name: Copy compose file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST_GREENROOM }}
+          port: 22
+          username: ${{ secrets.EC2_USER_GREENROOM }}
+          key: ${{ secrets.EC2_SSH_KEY_GREENROOM }}
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_port: 22
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          source: greenroom/docker-compose.greenroom.yml
+          target: /home/${{ secrets.EC2_USER_GREENROOM }}/app/greenroom/
+          strip_components: 1
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST_GREENROOM }}
+          port: 22
+          username: ${{ secrets.EC2_USER_GREENROOM }}
+          key: ${{ secrets.EC2_SSH_KEY_GREENROOM }}
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_port: 22
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          debug: true
+          script: |
+            set -e
+
+            cd ~/app/greenroom
+
+            cat > .env <<'EOF'
+            ${{ secrets.GREENROOM_ENV_FILE }}
+            EOF
+
+            # Log in to GHCR using a PAT stored as a repository secret
+            echo "${{ secrets.GHCR_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+            # Pull latest image for greenroom
+            sudo IMAGE_PREFIX=ghcr.io/${{ github.repository_owner }} docker compose -f docker-compose.greenroom.yml pull greenroom
+
+            # Restart greenroom service
+            echo "Restarting greenroom..."
+            sudo IMAGE_PREFIX=ghcr.io/${{ github.repository_owner }} docker compose -f docker-compose.greenroom.yml up -d --no-deps greenroom
+            echo "greenroom restarted."
+
+            # Remove dangling images to free disk space
+            sudo docker image prune -f

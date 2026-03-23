@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  greenroom:
+    image: ${IMAGE_PREFIX}/greenroom:latest
+    container_name: chilktc-greenroom
+    restart: always
+    ports:
+      - "8082:8082"
+    env_file:
+      - ./.env
