@@ -1,0 +1,90 @@
+name: CD - Deploy Notification to EC2
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    name: Deploy Notification to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Prepare remote directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST_NOTIFICATION }}
+          port: 22
+          username: ${{ secrets.EC2_USER_NOTIFICATION }}
+          key: ${{ secrets.EC2_SSH_KEY_NOTIFICATION }}
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_port: 22
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          debug: true
+          script: |
+            set -e
+            sudo mkdir -p ~/app/notification
+            sudo chown -R "$USER":"$USER" ~/app/notification
+
+      - name: Copy compose file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST_NOTIFICATION }}
+          port: 22
+          username: ${{ secrets.EC2_USER_NOTIFICATION }}
+          key: ${{ secrets.EC2_SSH_KEY_NOTIFICATION }}
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_port: 22
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          source: notification/docker-compose.notification.yml
+          target: /home/${{ secrets.EC2_USER_NOTIFICATION }}/app/notification/
+          strip_components: 1
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST_NOTIFICATION }}
+          port: 22
+          username: ${{ secrets.EC2_USER_NOTIFICATION }}
+          key: ${{ secrets.EC2_SSH_KEY_NOTIFICATION }}
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_port: 22
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          debug: true
+          script: |
+            set -e
+
+            cd ~/app/notification
+
+            cat > .env <<'EOF'
+            ${{ secrets.NOTIFICATION_ENV_FILE }}
+            EOF
+
+            # Log in to GHCR using a PAT stored as a repository secret
+            echo "${{ secrets.GHCR_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+            # Pull latest image for notification
+            sudo IMAGE_PREFIX=ghcr.io/${{ github.repository_owner }} docker compose -f docker-compose.notification.yml pull notification
+
+            # Restart notification service
+            echo "Restarting notification..."
+            sudo IMAGE_PREFIX=ghcr.io/${{ github.repository_owner }} docker compose -f docker-compose.notification.yml up -d --no-deps notification
+            echo "notification restarted."
+
+            # Remove dangling images to free disk space
+            sudo docker image prune -f

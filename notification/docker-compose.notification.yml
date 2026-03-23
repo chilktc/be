@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  notification:
+    image: ${IMAGE_PREFIX}/notification:latest
+    container_name: chilktc-notification
+    restart: always
+    ports:
+      - "8083:8083"
+    env_file:
+      - ./.env
