@@ -26,7 +26,6 @@ public enum ErrorCode {
 	OAUTH_PROVIDER_MISMATCH(HttpStatus.FORBIDDEN, "OAuth 제공자 정보가 일치하지 않습니다."),
 	INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "닉네임을 입력하세요."),
 	ALREADY_CONSENTED(HttpStatus.BAD_REQUEST, "이미 동의가 완료된 사용자입니다."),
-	PRIVACY_NOT_AGREED(HttpStatus.BAD_REQUEST, "개인정보 수집 및 이용에 동의해야 합니다."),
 	USER_DISABLED(HttpStatus.FORBIDDEN, "사용이 중지된 계정입니다."),
 	JWT_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
 	JWT_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
@@ -39,7 +38,8 @@ public enum ErrorCode {
 	INVALID_EMAIL(HttpStatus.BAD_REQUEST, "이메일이 일치하지 않습니다."),
 	ALREADY_DELETED_USER(HttpStatus.BAD_REQUEST, "이미 삭제된 회원입니다."),
 	INVALID_NICKNAME_FORMAT(HttpStatus.BAD_REQUEST, "닉네임은 영어, 숫자, 한글, 언더스코어만 사용할 수 있습니다."),
-	DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다.")
+	DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다."),
+	REQUIRED_CONSENTS_NOT_AGREED(HttpStatus.BAD_REQUEST, "필수 동의 항목에 모두 동의해야 합니다.")
 	,;
 	private final HttpStatus status;
 	private final String message;
