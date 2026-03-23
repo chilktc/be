@@ -81,6 +81,15 @@ public class User {
 	@Column
 	private LocalDateTime deletedAt;
 
+	@Column(nullable = false)
+	private boolean agreedTermsOfService;
+
+	@Column(nullable = false)
+	private boolean agreedPrivacyPolicy;
+
+	@Column(nullable = false)
+	private boolean agreedMarketing;
+
 
 	private User(
 		UUID id,
@@ -92,7 +101,10 @@ public class User {
 		String password,
 		Role role,
 		boolean isActive,
-		boolean firstLogin
+		boolean firstLogin,
+		boolean agreedTermsOfService,
+		boolean agreedPrivacyPolicy,
+		boolean agreedMarketing
 	) {
 		this.id = id;
 		this.email = email;
@@ -104,6 +116,9 @@ public class User {
 		this.role = role;
 		this.isActive = isActive;
 		this.firstLogin = firstLogin;
+		this.agreedTermsOfService = agreedTermsOfService;
+		this.agreedPrivacyPolicy = agreedPrivacyPolicy;
+		this.agreedMarketing = agreedMarketing;
 	}
 
 	public static User invitedUserByAdmin(
@@ -121,7 +136,10 @@ public class User {
 			null,
 			role,
 			true,
-			true
+			true,
+			false,
+			false,
+			false
 		);
 	}
 
@@ -166,11 +184,26 @@ public class User {
 			encodedPassword,
 			role,
 			true,
+			false,
+			true,
+			true,
 			false
 		);
 	}
 
-	public void completeFirstLogin() {
+	public void completeFirstLogin(
+		boolean agreedTermsOfService,
+		boolean agreedPrivacyPolicy,
+		boolean agreedMarketing
+	) {
+		Preconditions.validate(
+			agreedTermsOfService && agreedPrivacyPolicy,
+			ErrorCode.REQUIRED_CONSENTS_NOT_AGREED
+		);
+
+		this.agreedTermsOfService = agreedTermsOfService;
+		this.agreedPrivacyPolicy = agreedPrivacyPolicy;
+		this.agreedMarketing = agreedMarketing;
 		this.firstLogin = false;
 	}
 
@@ -192,5 +225,3 @@ public class User {
 		this.email = this.email + "_deleted_" + this.id;
 	}
 }
-
-

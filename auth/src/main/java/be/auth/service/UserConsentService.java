@@ -25,8 +25,12 @@ public class UserConsentService {
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
 		Preconditions.validate(user.isFirstLogin(), ErrorCode.ALREADY_CONSENTED);
-		Preconditions.validate(request.agreedPrivacy(), ErrorCode.PRIVACY_NOT_AGREED);
+		Preconditions.validate(request.hasRequiredConsents(), ErrorCode.REQUIRED_CONSENTS_NOT_AGREED);
 
-		user.completeFirstLogin();
+		user.completeFirstLogin(
+			request.agreedTermsOfService(),
+			request.agreedPrivacyPolicy(),
+			request.agreedMarketing()
+		);
 	}
 }
