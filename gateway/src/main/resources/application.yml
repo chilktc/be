@@ -17,11 +17,13 @@ spring:
   cloud:
     gateway:
       globalcors:
+        add-to-simple-url-handler-mapping: true
         cors-configurations:
           '[/**]':
             allow-credentials: true
             allowed-origins:
               - http://localhost:3000
+              - https://bloom-chil.com
               - https://api.bloom-chil.com
             allowed-methods:
               - GET
@@ -30,7 +32,8 @@ spring:
               - PATCH
               - DELETE
               - OPTIONS
-            allowed-headers: "*"
+            allowed-headers:
+              - "*"
 
       server:
         webflux:
