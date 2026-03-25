@@ -61,8 +61,8 @@ public class AuthController {
 				.httpOnly(true)
 				// TODO : 배포 서비스에서는 true를 사용
 				.secure(true)          // HTTPS 환경에서만
-				.sameSite("Lax")
-				.path("/auth/refresh")
+				.sameSite("None")
+				.path("/")
 				.maxAge(Duration.ofDays(14))
 				.build()
 				.toString()
@@ -92,9 +92,9 @@ public class AuthController {
 			"Set-Cookie",
 			ResponseCookie.from("refreshToken", result.refreshToken())
 				.httpOnly(true)
-				.secure(false)
-				.sameSite("Lax")
-				.path("/auth/refresh")
+				.secure(true)
+				.sameSite("None")
+				.path("/")
 				.maxAge(Duration.ofDays(14))
 				.build()
 				.toString()
@@ -140,9 +140,9 @@ public class AuthController {
 			"Set-Cookie",
 			ResponseCookie.from("refreshToken", "")
 				.httpOnly(true)
-				.secure(false)
-				.sameSite("Lax")
-				.path("/auth/refresh")
+				.secure(true)
+				.sameSite("None")
+				.path("/")
 				.maxAge(0)
 				.build()
 				.toString()
