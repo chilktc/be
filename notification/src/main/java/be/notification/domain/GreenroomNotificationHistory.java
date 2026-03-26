@@ -8,8 +8,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -30,8 +28,8 @@ import lombok.NoArgsConstructor;
 public class GreenroomNotificationHistory {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@Column(nullable = false, updatable = false)
+	private UUID id;
 
 	@Column(name = "user_id", nullable = false)
 	private UUID userId;
@@ -49,10 +47,6 @@ public class GreenroomNotificationHistory {
 	@Column(nullable = false)
 	private NotificationChannel channel;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "template_code", nullable = false)
-	private GreenroomTemplateCode templateCode;
-
 	@Column(name = "idempotency_key", nullable = false)
 	private String idempotencyKey;
 
@@ -63,6 +57,9 @@ public class GreenroomNotificationHistory {
 	@Column(nullable = false)
 	private SendResult result;
 
+	@Column(name = "is_checked", nullable = false)
+	private boolean checked;
+
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
@@ -72,20 +69,20 @@ public class GreenroomNotificationHistory {
 		int sequence,
 		int attempt,
 		NotificationChannel channel,
-		GreenroomTemplateCode templateCode,
 		String idempotencyKey,
 		Instant sentAt
 	) {
 		GreenroomNotificationHistory history = new GreenroomNotificationHistory();
+		history.id = UUID.randomUUID();
 		history.userId = userId;
 		history.ticketId = ticketId;
 		history.sequence = sequence;
 		history.attempt = attempt;
 		history.channel = channel;
-		history.templateCode = templateCode;
 		history.idempotencyKey = idempotencyKey;
 		history.sentAt = sentAt;
 		history.result = SendResult.SUCCESS;
+		history.checked = false;
 		return history;
 	}
 
@@ -95,7 +92,6 @@ public class GreenroomNotificationHistory {
 		int sequence,
 		int attempt,
 		NotificationChannel channel,
-		GreenroomTemplateCode templateCode,
 		String idempotencyKey,
 		Instant sentAt
 	) {
@@ -105,7 +101,6 @@ public class GreenroomNotificationHistory {
 			sequence,
 			attempt,
 			channel,
-			templateCode,
 			idempotencyKey,
 			sentAt
 		);
