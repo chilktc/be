@@ -11,45 +11,49 @@ spring:
     import: optional:classpath:greenroom-templates.yml
 
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_DATABASE:notification}
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_DATABASE:notification}?rewriteBatchedStatements=true&cachePrepStmts=true&useServerPrepStmts=true
     username: ${DB_USERNAME:auth}
     password: ${DB_PASSWORD:auth}
     driver-class-name: com.mysql.cj.jdbc.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
     open-in-view: false
     properties:
-      hibernate.jdbc.time_zone: Asia/Seoul
+      hibernate:
+        jdbc:
+          batch_size: 200
+          time_zone: Asia/Seoul
+        order_inserts: true
+        order_updates: true
+        jdbc.batch_versioned_data: true
 
-#  kafka:
-#    bootstrap-servers: ${kafka.servers:localhost:29092}
-#    consumer:
-#      auto-offset-reset: earliest
-#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      properties:
-#        fetch.min.bytes: 1
-#        spring.json.trusted.packages: "*"
-#    producer:
-#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
   kafka:
     bootstrap-servers: ${kafka.servers:localhost:29092}
-    properties:
-      security.protocol: SASL_SSL
-      sasl.mechanism: AWS_MSK_IAM
-      sasl.jaas.config: software.amazon.msk.auth.iam.IAMLoginModule required;
-      sasl.client.callback.handler.class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
     consumer:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      properties:
-        fetch.min.bytes: 1
-        spring.json.trusted.packages: "*"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#  kafka:
+#    bootstrap-servers: ${kafka.servers:localhost:29092}
+#    properties:
+#      security.protocol: SASL_SSL
+#      sasl.mechanism: AWS_MSK_IAM
+#      sasl.jaas.config: software.amazon.msk.auth.iam.IAMLoginModule required;
+#      sasl.client.callback.handler.class: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+#    consumer:
+#      auto-offset-reset: earliest
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#    producer:
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+notification:
+  dispatch:
+    parallel-consumer:
+      enabled: true
+      auto-startup: true
