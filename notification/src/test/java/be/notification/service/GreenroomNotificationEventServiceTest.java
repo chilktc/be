@@ -17,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.context.ActiveProfiles;
 
 import be.notification.domain.GreenroomNotificationTarget;
 import be.notification.domain.GreenroomNotificationUserPreference;
@@ -27,6 +28,7 @@ import be.notification.repository.GreenroomNotificationProcessedEventRepository;
 import be.notification.repository.GreenroomNotificationTargetRepository;
 import be.notification.repository.GreenroomNotificationUserPreferenceRepository;
 
+@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 class GreenroomNotificationEventServiceTest {
 
