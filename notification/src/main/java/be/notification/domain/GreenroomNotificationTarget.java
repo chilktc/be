@@ -84,6 +84,11 @@ public class GreenroomNotificationTarget {
 		this.nextSendAt = calculateNextSendAt(this.nextSequence);
 	}
 
+	public void restoreForBenchmark(int nextSequence, Instant nextSendAt) {
+		this.nextSequence = nextSequence;
+		this.nextSendAt = nextSendAt;
+	}
+
 	private Instant calculateNextSendAt(int sequence) {
 		long offsetDays = switch (sequence) {
 			case 1 -> 1L;
