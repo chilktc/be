@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class GreenroomNotificationEventConsumer {
 
 	private static final String TOPIC = "greenroom.notification.events";
-	private static final String GROUP_ID = "greenroom-notification-group";
+	private static final String GROUP_ID = "greenroom-notification-event-group";
 	private static final String EVENT_TYPE = "eventType";
 
 	private final ObjectMapper objectMapper;
@@ -32,14 +32,16 @@ public class GreenroomNotificationEventConsumer {
 	public void consume(String message) throws Exception {
 		JsonNode root = objectMapper.readTree(message);
 		GreenroomNotificationEventType eventType = GreenroomNotificationEventType.valueOf(root.get(EVENT_TYPE).asText());
+
 		switch (eventType) {
 			case GREENROOM_TICKET_CREATED ->
 				eventService.handleTicketCreated(objectMapper.treeToValue(root, GreenroomTicketCreatedEvent.class));
 			case GREENROOM_TICKET_RESOLVED ->
 				eventService.handleTicketResolved(objectMapper.treeToValue(root, GreenroomTicketResolvedEvent.class));
-			case GREENROOM_USER_NOTIFICATION_PREFERENCE_UPDATED -> eventService.handleUserPreferenceUpdated(
-				objectMapper.treeToValue(root, GreenroomUserNotificationPreferenceUpdatedEvent.class)
-			);
+			case GREENROOM_USER_NOTIFICATION_PREFERENCE_UPDATED ->
+				eventService.handleUserPreferenceUpdated(
+					objectMapper.treeToValue(root, GreenroomUserNotificationPreferenceUpdatedEvent.class)
+				);
 		}
 	}
 }
