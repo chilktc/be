@@ -17,6 +17,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class KafkaListenerConfig {
 
 	private static final String GREENROOM_DLQ_TOPIC = "greenroom.notification.events.dlq";
+	private static final String GREENROOM_DISPATCH_TOPIC = "greenroom.notification.dispatch";
+	private static final String GREENROOM_DISPATCH_DLQ_TOPIC = "greenroom.notification.dispatch.dlq";
 
 	@Bean
 	public DefaultErrorHandler greenroomNotificationErrorHandler(KafkaTemplate<String, String> kafkaTemplate) {
@@ -50,5 +52,15 @@ public class KafkaListenerConfig {
 	@Bean
 	public NewTopic greenroomNotificationDlqTopic() {
 		return new NewTopic(GREENROOM_DLQ_TOPIC, 3, (short)1);
+	}
+
+	@Bean
+	public NewTopic greenroomNotificationDispatchTopic() {
+		return new NewTopic(GREENROOM_DISPATCH_TOPIC, 1, (short)1);
+	}
+
+	@Bean
+	public NewTopic greenroomNotificationDispatchDlqTopic() {
+		return new NewTopic(GREENROOM_DISPATCH_DLQ_TOPIC, 1, (short)1);
 	}
 }

@@ -2,6 +2,7 @@ package be.notification.repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.Modifying;
@@ -14,6 +15,10 @@ import be.notification.domain.GreenroomNotificationTarget;
 public interface GreenroomNotificationTargetRepository extends JpaRepository<GreenroomNotificationTarget, UUID> {
 
 	List<GreenroomNotificationTarget> findByResolvedFalseAndEnabledTrueAndNextSendAtLessThanEqual(Instant now);
+
+	long countByResolvedFalseAndEnabledTrueAndNextSendAtLessThanEqual(Instant now);
+
+	long countByTicketIdInAndResolvedFalseAndEnabledTrueAndNextSendAtLessThanEqual(Set<UUID> ticketIds, Instant now);
 
 	List<GreenroomNotificationTarget> findByUserId(UUID userId);
 
