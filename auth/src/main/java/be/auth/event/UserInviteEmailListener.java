@@ -22,7 +22,15 @@ public class UserInviteEmailListener {
 		try {
 			invitedEmailService.sendInviteEmail(event.email());
 		} catch (SesException e) {
-			log.error("SES email send failed. email={}", event.email(), e);
+			log.error(
+				"SES email send failed. email={}, awsMessage={}, statusCode={}",
+				event.email(),
+				e.awsErrorDetails() != null ? e.awsErrorDetails().errorMessage() : e.getMessage(),
+				e.statusCode(),
+				e
+			);
+		} catch (Exception e) {
+			log.error("Unexpected email send failed. email={}", event.email(), e);
 		}
 	}
 }
