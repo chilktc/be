@@ -12,7 +12,7 @@ env:
 
 jobs:
   deploy:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    if: github.event.workflow_run.conclusion == 'success' && (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'dev')
     name: Deploy Auth to EC2
     runs-on: ubuntu-latest
 
