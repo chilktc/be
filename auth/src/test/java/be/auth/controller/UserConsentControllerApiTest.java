@@ -45,7 +45,9 @@ class UserConsentControllerApiTest {
 		UUID userId = UUID.randomUUID();
 		String body = """
 			{
-			  "agreedPrivacy": true
+			  "agreedTermsOfService": true,
+			  "agreedPrivacyPolicy": true,
+			  "agreedMarketing": false
 			}
 			""";
 
@@ -59,7 +61,10 @@ class UserConsentControllerApiTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.code").value("ok"));
 
-		verify(userConsentService).completeFirstLogin(userId, new be.auth.dto.request.ConsentRequest(true));
+		verify(userConsentService).completeFirstLogin(
+			userId,
+			new be.auth.dto.request.ConsentRequest(true, true, false)
+		);
 		verify(authNotificationPreferenceService).initializeAndPublish(userId);
 	}
 }

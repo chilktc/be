@@ -34,13 +34,13 @@ class UserConsentServiceTest {
 			.thenReturn(Optional.of(user));
 		when(user.isFirstLogin()).thenReturn(true);
 
-		ConsentRequest request = new ConsentRequest(true);
+		ConsentRequest request = new ConsentRequest(true, true, false);
 
 		//when
 		userConsentService.completeFirstLogin(userId, request);
 
 		//then
-		verify(user).completeFirstLogin();
+		verify(user).completeFirstLogin(true, true, false);
 	}
 
 	@Test
@@ -55,7 +55,7 @@ class UserConsentServiceTest {
 			.thenReturn(Optional.of(user));
 		when(user.isFirstLogin()).thenReturn(false);
 
-		ConsentRequest request = new ConsentRequest(true);
+		ConsentRequest request = new ConsentRequest(true, true, false);
 
 		//when & then
 		assertThatThrownBy(() ->
@@ -75,7 +75,7 @@ class UserConsentServiceTest {
 			.thenReturn(Optional.of(user));
 		when(user.isFirstLogin()).thenReturn(true);
 
-		ConsentRequest request = new ConsentRequest(false);
+		ConsentRequest request = new ConsentRequest(false, true, false);
 
 		//when & then
 		assertThatThrownBy(() ->

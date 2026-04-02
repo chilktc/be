@@ -49,6 +49,12 @@ public class User {
 	@Column
 	private String nickname;
 
+	@Column
+	private String department;
+
+	@Column
+	private String position;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(
 		name = "profile_image_id",
@@ -90,11 +96,15 @@ public class User {
 	@Column(nullable = false)
 	private boolean agreedMarketing;
 
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private LocalDateTime createdAt;
 
 	private User(
 		UUID id,
 		String email,
 		String nickname,
+		String department,
+		String position,
 		ProfileImage profileImage,
 		OauthProvider provider,
 		String providerUserId,
@@ -109,6 +119,8 @@ public class User {
 		this.id = id;
 		this.email = email;
 		this.nickname = nickname;
+		this.department = department;
+		this.position = position;
 		this.profileImage = profileImage;
 		this.provider = provider;
 		this.providerUserId = providerUserId;
@@ -123,13 +135,18 @@ public class User {
 
 	public static User invitedUserByAdmin(
 		UUID id,
+		String name,
 		String email,
+		String department,
+		String position,
 		Role role
 	) {
 		return new User(
 			id,
 			email,
-			null,
+			name,
+			department,
+			position,
 			null,
 			null,
 			null,
@@ -158,7 +175,18 @@ public class User {
 	}
 
 	@PrePersist
+	private void onCreate() {
+		if (this.createdAt == null) {
+			this.createdAt = LocalDateTime.now();
+		}
+		validateState();
+	}
+
 	@PreUpdate
+	private void onUpdate() {
+		validateState();
+	}
+
 	private void validateState() {
 		if (this.providerUserId != null &&
 			(this.nickname == null || this.nickname.isBlank())) {
@@ -178,6 +206,8 @@ public class User {
 			id,
 			email,
 			email,  // 서버 가입 유저는 이메일을 닉네임으로 사용
+			null,
+			null,
 			null,
 			OauthProvider.SERVER,
 			email,
@@ -211,6 +241,23 @@ public class User {
 	public void changeNickname(String nickname) {
 		Preconditions.validate(nickname != null && !nickname.isBlank(), ErrorCode.INVALID_NICKNAME);
 		this.nickname = nickname;
+	}
+
+	public void updateOrganizationInfo(
+		String name,
+		String email,
+		String department,
+		String position,
+		Role role
+	) {
+		Preconditions.validate(name != null && !name.isBlank(), ErrorCode.INVALID_NICKNAME);
+		Preconditions.validate(email != null && !email.isBlank(), ErrorCode.INVALID_EMAIL);
+
+		this.nickname = name;
+		this.email = email;
+		this.department = department;
+		this.position = position;
+		this.role = role;
 	}
 
 	public void changeImage(ProfileImage image) {
