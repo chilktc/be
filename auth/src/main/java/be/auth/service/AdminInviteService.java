@@ -31,7 +31,10 @@ public class AdminInviteService {
 
 		User user = User.invitedUserByAdmin(
 			UUID.randomUUID(),
+			request.name(),
 			request.email(),
+			request.department(),
+			request.position(),
 			request.role()
 		);
 
@@ -41,6 +44,4 @@ public class AdminInviteService {
 			new UserInvitedEvent(user.getId(), user.getEmail())
 		);
 	}
-
-
 }
