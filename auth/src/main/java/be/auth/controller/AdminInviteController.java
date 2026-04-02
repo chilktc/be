@@ -30,7 +30,7 @@ public class AdminInviteController {
 
 	@Operation(
 		summary = "조직원 초대",
-		description = "관리자가 조직원 이메일을 등록하면 초대 메일을 발송합니다."
+		description = "관리자가 조직원의 이름, 이메일, 부서, 직급, 권한을 등록하면 초대 메일을 발송합니다."
 	)
 	@ApiErrorCodeExamples({
 		ErrorCode.EXIST_USER,
