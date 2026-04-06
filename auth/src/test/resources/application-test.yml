@@ -1,4 +1,10 @@
 spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
+
   datasource:
     url: jdbc:h2:mem:notification-test;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
@@ -11,7 +17,26 @@ spring:
     show-sql: false
     open-in-view: false
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      ssl:
+        enabled: false
+
   kafka:
     listener:
       auto-startup: false
     bootstrap-servers: dummy:9092
+
+app:
+  invite:
+    login-url: http://localhost/test-login
+  email:
+    from: test@example.com
+
+oauth:
+  google:
+    client-id: test-google-client-id
+    client-secret: test-google-client-secret
+    redirect-uri: http://localhost/test/oauth/google/callback

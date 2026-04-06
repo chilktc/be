@@ -1,21 +1,33 @@
 package be.auth.service;
 
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
+import java.time.Duration;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import be.auth.dto.request.InviteUserRequest;
 import be.auth.jwt.Role;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class InviteUserIntegrationTest {
+	@MockitoBean
+	private RedisConnectionFactory redisConnectionFactory;
+
+	@MockitoBean
+	private StringRedisTemplate stringRedisTemplate;
+
 	@Autowired
 	private AdminInviteService adminInviteService;
 
@@ -31,13 +43,23 @@ class InviteUserIntegrationTest {
 
 		//given
 		String email = UUID.randomUUID() + "@test.com";
-		InviteUserRequest request = new InviteUserRequest(email, Role.USER);
+		InviteUserRequest request = new InviteUserRequest(
+			"신규 조직원",
+			email,
+			"개발팀",
+			"사원",
+			Role.USER
+		);
 
 		//when
 		adminInviteService.inviteUser(request);
 
 		//then
-		verify(invitedEmailService, times(1))
-			.sendInviteEmail(email);
+		await()
+			.atMost(Duration.ofSeconds(3))
+			.untilAsserted(() ->
+				verify(invitedEmailService, times(1))
+					.sendInviteEmail(email)
+			);
 	}
 }
