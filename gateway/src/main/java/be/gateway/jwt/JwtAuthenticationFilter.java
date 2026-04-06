@@ -95,8 +95,13 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
 					.request(
 						exchange.getRequest()
 							.mutate()
-							.header("X-User-Id", userId)
-							.header("X-User-Role", role)
+							.headers(headers -> {
+								headers.remove("X-User-Id");
+								headers.remove("X-User-Role");
+
+								headers.set("X-User-Id", userId);
+								headers.set("X-User-Role", role);
+							})
 							.build()
 					)
 					.build()
