@@ -4,7 +4,7 @@ import be.auth.jwt.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record InviteUserRequest(
+public record UpdateOrganizationUserRequest(
 	@NotBlank
 	String name,
 	@NotBlank
@@ -15,5 +15,5 @@ public record InviteUserRequest(
 	String position,
 	@NotNull
 	Role role
-)
-{}
+) {
+}
