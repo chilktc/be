@@ -33,6 +33,8 @@ import be.greenroom.graph.service.GraphQueryService;
 class GraphControllerTest {
 
 	private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
+	private static final String ADMIN_ROLE = "ADMIN";
+	private static final String USER_ROLE = "USER";
 
 	private MockMvc mockMvc;
 	private GraphQueryService graphQueryService;
@@ -144,7 +146,9 @@ class GraphControllerTest {
 			)
 		);
 
-		mockMvc.perform(get("/api/v1/graph/users/{userId}/data", USER_ID))
+		mockMvc.perform(get("/api/v1/graph/users/{userId}/data", USER_ID)
+				.header("X-User-Id", USER_ID.toString())
+				.header("X-User-Role", ADMIN_ROLE))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.nodes[0].group").value("leadership"))
 			.andExpect(jsonPath("$.data.links[0].source_label").value("의견 무시"))
@@ -162,10 +166,22 @@ class GraphControllerTest {
 			)
 		);
 
-		mockMvc.perform(get("/api/v1/graph/organization/data"))
+		mockMvc.perform(get("/api/v1/graph/organization/data")
+				.header("X-User-Id", USER_ID.toString())
+				.header("X-User-Role", ADMIN_ROLE))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.nodes[0].group").value("leadership"))
 			.andExpect(jsonPath("$.data.links[0].weight").value(18))
 			.andExpect(jsonPath("$.data.category_distribution.leadership").value(52));
+	}
+
+	@Test
+	@DisplayName("그래프 API는 ADMIN이 아닌 사용자의 요청을 거부한다")
+	void 그래프_API_권한없음() throws Exception {
+		mockMvc.perform(get("/api/v1/graph/organization/data")
+				.header("X-User-Id", USER_ID.toString())
+				.header("X-User-Role", USER_ROLE))
+			.andExpect(status().isForbidden())
+			.andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
 	}
 }

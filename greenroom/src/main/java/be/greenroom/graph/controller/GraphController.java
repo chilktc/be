@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import be.common.api.ApiResult;
+import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 import be.common.docs.ApiErrorCodeExamples;
 import be.greenroom.graph.dto.request.CreateGraphAnalysisRequest;
@@ -24,8 +26,10 @@ import be.greenroom.graph.dto.response.GraphUserDataResponse;
 import be.greenroom.graph.service.GraphCommandService;
 import be.greenroom.graph.service.GraphQueryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
@@ -100,11 +104,19 @@ public class GraphController {
 	)
 	@ApiErrorCodeExamples({
 		ErrorCode.VALIDATION_ERROR,
+		ErrorCode.ACCESS_DENIED,
 		ErrorCode.GRAPH_RESPONSE_SCHEMA_MISMATCH
 	})
 	@GetMapping("/graph/users/{userId}/data")
 	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<GraphUserDataResponse> getUserGraphData(@PathVariable @NotNull UUID userId) {
+	public ApiResult<GraphUserDataResponse> getUserGraphData(
+		@Parameter(hidden = true)
+		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
+		@Parameter(hidden = true)
+		@RequestHeader("X-User-Role") @NotBlank String role,
+		@PathVariable @NotNull UUID userId
+	) {
+		validateAdminAccess(userIdHeader, role);
 		return ApiResult.ok(graphQueryService.getGraphVisualizationData(userId));
 	}
 
@@ -113,11 +125,26 @@ public class GraphController {
 		description = "활성 사용자 전체를 조직 구성원으로 간주하여 프론트엔드 시각화용 누적 그래프를 반환한다."
 	)
 	@ApiErrorCodeExamples({
+		ErrorCode.ACCESS_DENIED,
 		ErrorCode.GRAPH_RESPONSE_SCHEMA_MISMATCH
 	})
 	@GetMapping("/graph/organization/data")
 	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<GraphUserDataResponse> getOrganizationGraphData() {
+	public ApiResult<GraphUserDataResponse> getOrganizationGraphData(
+		@Parameter(hidden = true)
+		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
+		@Parameter(hidden = true)
+		@RequestHeader("X-User-Role") @NotBlank String role
+	) {
+		validateAdminAccess(userIdHeader, role);
 		return ApiResult.ok(graphQueryService.getOrganizationGraphVisualizationData());
+	}
+
+	private void validateAdminAccess(String userIdHeader, String role) {
+		UUID.fromString(userIdHeader);
+
+		if (!"ADMIN".equals(role)) {
+			throw new CustomException(ErrorCode.ACCESS_DENIED);
+		}
 	}
 }
