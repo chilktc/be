@@ -2,7 +2,10 @@ package be.common.api;
 
 import java.util.Arrays;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -29,12 +32,40 @@ public class ApiAdvice {
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<ErrorResponse.ErrorData> methodArgumentNotValidException(MethodArgumentNotValidException e) {
+	public ResponseEntity<ErrorResponse.ErrorData> methodArgumentNotValidException(
+		MethodArgumentNotValidException e,
+		HttpServletRequest request
+	) {
 		e.printStackTrace();
 		var details = Arrays.toString(e.getDetailMessageArguments());
 		var message = details.split(",", 2)[1].replace("]", "").trim();
 
+		if (isGraphWriteEndpoint(request)) {
+			return ErrorResponse.error(ErrorCode.GRAPH_REQUEST_SCHEMA_MISMATCH);
+		}
+
 		return ErrorResponse.error(ErrorCode.VALIDATION_ERROR);
+	}
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<ErrorResponse.ErrorData> httpMessageNotReadableException(
+		HttpMessageNotReadableException e,
+		HttpServletRequest request
+	) {
+		e.printStackTrace();
+
+		if (isGraphWriteEndpoint(request)) {
+			return ErrorResponse.error(ErrorCode.GRAPH_REQUEST_SCHEMA_MISMATCH);
+		}
+
+		return ErrorResponse.error(ErrorCode.VALIDATION_ERROR);
+	}
+
+	private boolean isGraphWriteEndpoint(HttpServletRequest request) {
+		String uri = request.getRequestURI();
+		String method = request.getMethod();
+		return ("PUT".equals(method) && "/api/v1/graph_nodes".equals(uri))
+			|| ("POST".equals(method) && "/api/v1/graph_analyses".equals(uri));
 	}
 
 }

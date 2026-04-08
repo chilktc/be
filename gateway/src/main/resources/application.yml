@@ -72,6 +72,18 @@ spring:
               predicates:
                 - Path=/greenroom/ai, /greenroom/ai/**
 
+            - id: greenroom-graph-internal
+              uri: http://${GREENROOM_SERVER_HOST:localhost}:${GREENROOM_SERVER_PORT:8082}
+              predicates:
+                - Path=/api/v1/graph_nodes, /api/v1/graph_analyses
+
+            - id: greenroom-graph-jwt
+              uri: http://${GREENROOM_SERVER_HOST:localhost}:${GREENROOM_SERVER_PORT:8082}
+              predicates:
+                - Path=/api/v1/graph/users/**, /api/v1/graph/organization/data
+              filters:
+                - JwtAuthenticationFilter
+
             - id: greenroom
               uri: http://${GREENROOM_SERVER_HOST:localhost}:${GREENROOM_SERVER_PORT:8082}
               predicates:
