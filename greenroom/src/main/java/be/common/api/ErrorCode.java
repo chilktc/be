@@ -13,6 +13,7 @@ public enum ErrorCode {
 	ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	NOTIFICATION_EVENT_SERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "알림 이벤트 직렬화에 실패했습니다."),
 	DOES_NOT_EXIST_TICKET(HttpStatus.BAD_REQUEST, "존재하지 않는 티켓 id입니다."),
+	DOES_NOT_EXIST_MIND_FREQUENCY(HttpStatus.BAD_REQUEST, "마음 주파수가 존재하지 않습니다."),
 	NO_TICKET_ACCESS(HttpStatus.FORBIDDEN, "해당 티켓에 접근 권한이 없습니다."),
 	ALREADY_RESOLVED_TICKET(HttpStatus.BAD_REQUEST, "이미 해결된 티켓입니다."),
 	TRACKING_RESOLVED_FIELDS_REQUIRED(HttpStatus.BAD_REQUEST, "해결 상태에서는 해결 필드가 필수입니다."),

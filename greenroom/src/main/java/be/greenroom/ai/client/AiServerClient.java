@@ -3,6 +3,7 @@ package be.greenroom.ai.client;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import be.greenroom.ai.dto.request.AiStorySelectionRequest;
 import be.greenroom.ai.dto.request.PodcastEpisodeRequest;
 import be.greenroom.ai.dto.request.SessionCloseRequest;
 import be.greenroom.ai.dto.request.SessionCreateRequest;
@@ -35,9 +36,18 @@ public class AiServerClient {
 			.block();
 	}
 
+	public void selectStory(AiStorySelectionRequest request) {
+		aiWebClient.post()
+			.uri("/api/v1/stories/select")
+			.bodyValue(request)
+			.retrieve()
+			.toBodilessEntity()
+			.block();
+	}
+
 	public SessionCloseResponse closeSession(String sessionId, SessionCloseRequest request) {
 		return aiWebClient.post()
-			.uri("/api/v1/sessions/{sessionId}/close", sessionId)
+			.uri("/api/sessions/{sessionId}/close", sessionId)
 			.bodyValue(request)
 			.retrieve()
 			.bodyToMono(SessionCloseResponse.class)

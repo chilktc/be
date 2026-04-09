@@ -1,8 +1,8 @@
 package be.greenroom.ticket.service;
 
 import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
@@ -13,8 +13,6 @@ import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 import be.common.utils.Preconditions;
 import be.greenroom.ai.client.AiServerClient;
-import be.greenroom.ai.dto.request.PodcastEpisodeRequest;
-import be.greenroom.ai.dto.request.SessionCloseRequest;
 import be.greenroom.ai.dto.request.SessionCreateRequest;
 import be.greenroom.ai.dto.response.SessionCreateResponse;
 import be.greenroom.notification.service.GreenroomNotificationEventPublisher;
@@ -33,9 +31,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TicketService {
 
-    private final TicketRepository ticketRepository;
+	private final TicketRepository ticketRepository;
 	private final GreenroomNotificationEventPublisher eventPublisher;
 	private final AiServerClient aiServerClient;
+	private final AiSessionRedisService aiSessionRedisService;
+	private final AsyncTicketCreateService asyncTicketCreateService;
 
     @Transactional
     public TicketResponse create(UUID userId, CreateTicketRequest request) {
@@ -44,30 +44,16 @@ public class TicketService {
     }
 
 	@Transactional
-	public TicketResponse createWithAi(UUID userId, CreateTicketRequest request) {
+	public String createWithAi(UUID userId, CreateTicketRequest request) {
 		SessionCreateResponse session = aiServerClient.createSession(new SessionCreateRequest(userId, "podcast"));
-		Preconditions.validate(session != null && session.session_id() != null, ErrorCode.INTERNAL_SERVER_ERROR);
+		Preconditions.validate(session != null && session.sessionId() != null, ErrorCode.INTERNAL_SERVER_ERROR);
 
-		String sessionId = session.session_id();
-		try {
-			aiServerClient.createPodcastEpisode(
-				new PodcastEpisodeRequest(
-					userId,
-					sessionId,
-					request.situation(),
-					buildDescription(request),
-					Map.of(),
-					Map.of("source", "greenroom")
-				)
-			);
-			Ticket saved = saveAndPublishTicket(userId, request, request.situation());
-			return TicketResponse.from(saved);
-		} finally {
-			aiServerClient.closeSession(
-				sessionId,
-				new SessionCloseRequest(userId, sessionId, "ticket-created")
-			);
-		}
+		String sessionId = session.sessionId();
+		aiSessionRedisService.delete(userId);
+		aiSessionRedisService.save(userId, sessionId, Duration.ofHours(1));
+
+		asyncTicketCreateService.createPodcastAndSaveTicket(userId, sessionId, request);
+		return sessionId;
     }
 
 	@Transactional(readOnly = true)
@@ -134,9 +120,4 @@ public class TicketService {
 		return saved;
 	}
 
-	private String buildDescription(CreateTicketRequest request) {
-		return "thought: " + request.thought()
-			+ "\naction: " + request.action()
-			+ "\ncolleagueReaction: " + (request.colleagueReaction() == null ? "" : request.colleagueReaction());
-	}
 }

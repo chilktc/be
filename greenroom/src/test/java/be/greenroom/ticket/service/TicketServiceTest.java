@@ -1,9 +1,11 @@
 package be.greenroom.ticket.service;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -16,6 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import be.greenroom.ai.client.AiServerClient;
+import be.greenroom.ai.dto.response.SessionCreateResponse;
 import be.greenroom.notification.event.GreenroomTicketCreatedEvent;
 import be.greenroom.notification.service.GreenroomNotificationEventPublisher;
 import be.greenroom.ticket.domain.Ticket;
@@ -29,6 +33,12 @@ class TicketServiceTest {
 	private TicketRepository ticketRepository;
 	@Mock
 	private GreenroomNotificationEventPublisher eventPublisher;
+	@Mock
+	private AiServerClient aiServerClient;
+	@Mock
+	private AiSessionRedisService aiSessionRedisService;
+	@Mock
+	private AsyncTicketCreateService asyncTicketCreateService;
 
 	@InjectMocks
 	private TicketService ticketService;
@@ -51,5 +61,24 @@ class TicketServiceTest {
 		ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
 		verify(eventPublisher).publish(org.mockito.ArgumentMatchers.eq(userId.toString()), eventCaptor.capture());
 		org.assertj.core.api.Assertions.assertThat(eventCaptor.getValue()).isInstanceOf(GreenroomTicketCreatedEvent.class);
+	}
+
+	@Test
+	@DisplayName("AI 연동 티켓 생성 시 세션을 저장하고 비동기 생성을 요청한다")
+	void AI연동_티켓생성_세션저장_비동기요청() {
+		// given
+		UUID userId = UUID.randomUUID();
+		CreateTicketRequest request = new CreateTicketRequest("situation", "thought", "action", "reaction");
+		when(aiServerClient.createSession(any()))
+			.thenReturn(new SessionCreateResponse("session-123", "podcast", "2026-04-07T10:00:00"));
+
+		// when
+		String sessionId = ticketService.createWithAi(userId, request);
+
+		// then
+		org.assertj.core.api.Assertions.assertThat(sessionId).isEqualTo("session-123");
+		verify(aiSessionRedisService).delete(userId);
+		verify(aiSessionRedisService).save(eq(userId), eq("session-123"), eq(Duration.ofHours(1)));
+		verify(asyncTicketCreateService).createPodcastAndSaveTicket(userId, "session-123", request);
 	}
 }
