@@ -77,6 +77,11 @@ spring:
             - id: greenroom-ai
               uri: http://${GREENROOM_SERVER_HOST:localhost}:${GREENROOM_SERVER_PORT:8082}
               predicates:
+                - Path=/greenroom/ingest/ai/**
+
+            - id: greenroom-ai
+              uri: http://${GREENROOM_SERVER_HOST:localhost}:${GREENROOM_SERVER_PORT:8082}
+              predicates:
                 - Path=/greenroom/ai, /greenroom/ai/**
 
             - id: greenroom-graph-internal
