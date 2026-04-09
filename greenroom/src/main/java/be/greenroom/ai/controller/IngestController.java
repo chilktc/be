@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "AI Ingest", description = "AI 서버 결과 수신 API")
 @RestController
-@RequestMapping("/ai")
+@RequestMapping("/greenroom/ingest/ai")
 @RequiredArgsConstructor
 public class IngestController {
 
