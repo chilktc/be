@@ -26,8 +26,10 @@ import be.greenroom.ticket.dto.response.TicketResponse;
 import be.greenroom.ticket.repository.TicketRepository;
 import be.greenroom.ticket.repository.dao.TicketPreviewDao;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class TicketService {
 
@@ -45,14 +47,22 @@ public class TicketService {
 
 	@Transactional
 	public String createWithAi(UUID userId, CreateTicketRequest request) {
+		log.info("[AI_TICKET] createWithAi start userId={}", userId);
+		log.info("[AI_TICKET] requesting AI session creation for userId={}", userId);
 		SessionCreateResponse session = aiServerClient.createSession(new SessionCreateRequest(userId, "podcast"));
+		log.info("[AI_TICKET] AI session response userId={}, session={}", userId, session);
 		Preconditions.validate(session != null && session.sessionId() != null, ErrorCode.INTERNAL_SERVER_ERROR);
 
 		String sessionId = session.sessionId();
+		log.info("[AI_TICKET] session created userId={}, sessionId={}", userId, sessionId);
+		log.info("[AI_TICKET] deleting previous AI session cache userId={}", userId);
 		aiSessionRedisService.delete(userId);
+		log.info("[AI_TICKET] saving AI session cache userId={}, sessionId={}", userId, sessionId);
 		aiSessionRedisService.save(userId, sessionId, Duration.ofHours(1));
 
+		log.info("[AI_TICKET] dispatching async podcast creation userId={}, sessionId={}", userId, sessionId);
 		asyncTicketCreateService.createPodcastAndSaveTicket(userId, sessionId, request);
+		log.info("[AI_TICKET] createWithAi end userId={}, sessionId={}", userId, sessionId);
 		return sessionId;
     }
 
