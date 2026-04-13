@@ -25,8 +25,8 @@ public class OrganizationGraphQueryDao {
 				    gn.grp,
 				    AVG(gn.weight) AS weight,
 				    SUM(gn.mention_count) AS mention_count
-				FROM greenroom.user_graph_nodes gn
-				JOIN auth.users u
+				FROM `mindlog-greenroom`.user_graph_nodes gn
+				JOIN `mindlog-auth`.users u
 				  ON u.id = gn.user_id
 				WHERE u.is_deleted = false
 				  AND u.is_active = true
@@ -53,8 +53,8 @@ public class OrganizationGraphQueryDao {
 				    ge.source_label,
 				    ge.target_label,
 				    SUM(ge.weight) AS weight
-				FROM greenroom.user_graph_edges ge
-				JOIN auth.users u
+				FROM `mindlog-greenroom`.user_graph_edges ge
+				JOIN `mindlog-auth`.users u
 				  ON u.id = ge.user_id
 				WHERE u.is_deleted = false
 				  AND u.is_active = true
@@ -84,8 +84,8 @@ public class OrganizationGraphQueryDao {
 				SELECT
 				    gn.grp,
 				    SUM(gn.mention_count) AS mention_count
-				FROM greenroom.user_graph_nodes gn
-				JOIN auth.users u
+				FROM `mindlog-greenroom`.user_graph_nodes gn
+				JOIN `mindlog-auth`.users u
 				  ON u.id = gn.user_id
 				WHERE u.is_deleted = false
 				  AND u.is_active = true
