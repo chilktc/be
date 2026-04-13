@@ -19,10 +19,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "AI Ingest", description = "AI 서버 결과 수신 API")
 @RestController
 @RequestMapping("/greenroom/ingest/ai")
+@Slf4j
 @RequiredArgsConstructor
 public class IngestController {
 
@@ -33,6 +35,7 @@ public class IngestController {
 	@PostMapping("/emotion_logs")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> receiveEmotionLogs(@RequestBody EmotionLogIngestRequest request) {
+		log.info("[AI_INGEST] received emotion_logs request={}", request);
 		return ApiResult.ok();
 	}
 
@@ -40,6 +43,7 @@ public class IngestController {
 	@PostMapping("/visualizations")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> receiveVisualizations(@RequestBody EmotionLogIngestRequest request) {
+		log.info("[AI_INGEST] received visualizations request={}", request);
 		return ApiResult.ok();
 	}
 
@@ -47,6 +51,7 @@ public class IngestController {
 	@PostMapping("/podcast_metadata")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> receivePodcastMetadata(@RequestBody EmotionLogIngestRequest request) {
+		log.info("[AI_INGEST] received podcast_metadata request={}", request);
 		return ApiResult.ok();
 	}
 
@@ -54,6 +59,7 @@ public class IngestController {
 	@PostMapping("/content_analyses")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> receiveContentAnalyses(@RequestBody EmotionLogIngestRequest request) {
+		log.info("[AI_INGEST] received content_analyses request={}", request);
 		return ApiResult.ok();
 	}
 
@@ -61,6 +67,7 @@ public class IngestController {
 	@PostMapping("/learning")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> receiveLearning(@RequestBody EmotionLogIngestRequest request) {
+		log.info("[AI_INGEST] received learning request={}", request);
 		return ApiResult.ok();
 	}
 
@@ -68,7 +75,15 @@ public class IngestController {
 	@PostMapping("/podcast_episodes")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<Void> receivePodcastEpisodes(@RequestBody @Valid PodcastEpisodeIngestRequest request) {
+		log.info(
+			"[AI_INGEST] received podcast_episodes sessionId={}, title={}, hasImageUrl={}, textLength={}",
+			request.sessionId(),
+			request.title(),
+			request.imageUrl() != null && !request.imageUrl().isBlank(),
+			request.text() != null ? request.text().length() : 0
+		);
 		podcastService.create(request);
+		log.info("[AI_INGEST] completed podcast_episodes sessionId={}", request.sessionId());
 		return ApiResult.ok();
 	}
 
@@ -76,7 +91,14 @@ public class IngestController {
 	@PostMapping("/mind-frequencies")
 	@ResponseStatus(HttpStatus.CREATED)
 	public ApiResult<Void> receiveMindFrequencies(@RequestBody @Valid CreateMindFrequencyRequest request) {
+		log.info(
+			"[AI_INGEST] received mind-frequencies sessionId={}, keywordsCount={}, descriptionLength={}",
+			request.sessionId(),
+			request.keywords() != null ? request.keywords().size() : 0,
+			request.description() != null ? request.description().length() : 0
+		);
 		mindFrequencyService.create(request);
+		log.info("[AI_INGEST] completed mind-frequencies sessionId={}", request.sessionId());
 		return ApiResult.ok();
 	}
 }
