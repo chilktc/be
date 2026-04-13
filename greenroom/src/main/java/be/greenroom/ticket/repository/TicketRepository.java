@@ -2,6 +2,7 @@ package be.greenroom.ticket.repository;
 
 import java.util.List;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,8 @@ import be.greenroom.ticket.domain.Ticket;
 import be.greenroom.ticket.repository.dao.TicketPreviewDao;
 
 public interface TicketRepository extends JpaRepository<Ticket, UUID> {
+
+	Optional<Ticket> findBySessionId(String sessionId);
 
 	@Query("""
         select new be.greenroom.ticket.repository.dao.TicketPreviewDao(

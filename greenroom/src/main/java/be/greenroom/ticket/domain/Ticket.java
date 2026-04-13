@@ -26,6 +26,9 @@ public class Ticket {
 	@Column
 	private String name;
 
+	@Column
+	private String sessionId;
+
     @Column(nullable = false)
     private String situation;
 
@@ -42,10 +45,11 @@ public class Ticket {
 	@Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    private Ticket(UUID userId, String name, String situation, String thought, String action, String colleagueReaction) {
+    private Ticket(UUID userId, String name, String sessionId, String situation, String thought, String action, String colleagueReaction) {
 		this.id = UUID.randomUUID();
 		this.name = name;
         this.userId = userId;
+		this.sessionId = sessionId;
         this.situation = situation;
         this.thought = thought;
         this.action = action;
@@ -53,7 +57,18 @@ public class Ticket {
     }
 
     public static Ticket create(UUID userId, String name, String situation, String thought, String action, String colleagueReaction) {
-        return new Ticket(userId, name, situation, thought, action, colleagueReaction);
+        return new Ticket(userId, name, null, situation, thought, action, colleagueReaction);
+    }
+
+	public static Ticket createWithSession(
+		UUID userId,
+		String sessionId,
+		String situation,
+		String thought,
+		String action,
+		String colleagueReaction
+	) {
+		return new Ticket(userId, null, sessionId, situation, thought, action, colleagueReaction);
     }
 
 	public void changeName(String name){
