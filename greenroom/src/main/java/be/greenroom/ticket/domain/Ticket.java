@@ -75,6 +75,22 @@ public class Ticket {
 		this.name = name;
 	}
 
+	public void updateForAiSession(
+		UUID userId,
+		String sessionId,
+		String situation,
+		String thought,
+		String action,
+		String colleagueReaction
+	) {
+		this.userId = userId;
+		this.sessionId = sessionId;
+		this.situation = situation;
+		this.thought = thought;
+		this.action = action;
+		this.colleagueReaction = colleagueReaction;
+	}
+
     @PrePersist
     public void prePersist() {
         if (this.createdAt == null) {

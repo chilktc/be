@@ -34,6 +34,35 @@ public class AsyncTicketCreateService {
 	@Transactional
 	public void createPodcastAndSaveTicket(UUID userId, String sessionId, CreateTicketRequest request) {
 		log.info("[AI_TICKET][ASYNC] start createPodcastAndSaveTicket userId={}, sessionId={}", userId, sessionId);
+		Ticket ticket = ticketRepository.findBySessionId(sessionId)
+			.map(existing -> {
+				log.info("[AI_TICKET][ASYNC] found existing ticket ticketId={}, sessionId={}, updating fields", existing.getId(), sessionId);
+				existing.updateForAiSession(
+					userId,
+					sessionId,
+					request.situation(),
+					request.thought(),
+					request.action(),
+					request.colleagueReaction()
+				);
+				return existing;
+			})
+			.orElseGet(() -> {
+				log.info("[AI_TICKET][ASYNC] creating ticket entity userId={}, sessionId={}", userId, sessionId);
+				return Ticket.createWithSession(
+					userId,
+					sessionId,
+					request.situation(),
+					request.thought(),
+					request.action(),
+					request.colleagueReaction()
+				);
+			});
+
+		log.info("[AI_TICKET][ASYNC] saving and flushing ticket before AI call userId={}, sessionId={}", userId, sessionId);
+		Ticket saved = ticketRepository.saveAndFlush(ticket);
+		log.info("[AI_TICKET][ASYNC] ticket persisted before AI call ticketId={}, userId={}, sessionId={}", saved.getId(), saved.getUserId(), sessionId);
+
 		log.info("[AI_TICKET][ASYNC] requesting AI podcast episode userId={}, sessionId={}", userId, sessionId);
 		PodcastEpisodeResponse response = aiServerClient.createPodcastEpisode(
 			new PodcastEpisodeRequest(
@@ -49,19 +78,6 @@ public class AsyncTicketCreateService {
 		log.info("[AI_TICKET][ASYNC] AI podcast response userId={}, sessionId={}, response={}", userId, sessionId, response);
 		Preconditions.validate(response != null, ErrorCode.INTERNAL_SERVER_ERROR);
 
-		log.info("[AI_TICKET][ASYNC] creating ticket entity userId={}, sessionId={}", userId, sessionId);
-		Ticket ticket = Ticket.createWithSession(
-			userId,
-			sessionId,
-			request.situation(),
-			request.thought(),
-			request.action(),
-			request.colleagueReaction()
-		);
-
-		log.info("[AI_TICKET][ASYNC] saving ticket userId={}, sessionId={}", userId, sessionId);
-		Ticket saved = ticketRepository.save(ticket);
-		log.info("[AI_TICKET][ASYNC] ticket saved ticketId={}, userId={}, sessionId={}", saved.getId(), saved.getUserId(), sessionId);
 		GreenroomTicketCreatedEvent event = new GreenroomTicketCreatedEvent(
 			UUID.randomUUID(),
 			GreenroomNotificationEventType.GREENROOM_TICKET_CREATED.name(),
