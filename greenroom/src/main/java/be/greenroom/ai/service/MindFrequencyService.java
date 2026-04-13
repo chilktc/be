@@ -14,8 +14,10 @@ import be.greenroom.ai.dto.response.MindFrequencyResponse;
 import be.greenroom.ai.repository.MindFrequencyRepository;
 import be.greenroom.ticket.service.AiSessionRedisService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MindFrequencyService {
 
@@ -24,15 +26,24 @@ public class MindFrequencyService {
 
 	@Transactional
 	public void create(CreateMindFrequencyRequest request) {
+		log.info(
+			"[AI_INGEST] MindFrequencyService.create start sessionId={}, keywordsCount={}",
+			request.sessionId(),
+			request.keywords() != null ? request.keywords().size() : 0
+		);
 		Optional<MindFrequency> existing = mindFrequencyRepository.findBySessionId(request.sessionId());
 		if (existing.isPresent()) {
+			log.info("[AI_INGEST] MindFrequencyService updating existing sessionId={}", request.sessionId());
 			existing.get().update(request.keywords(), request.description());
 		} else {
+			log.info("[AI_INGEST] MindFrequencyService creating new sessionId={}", request.sessionId());
 			mindFrequencyRepository.save(
 				MindFrequency.create(request.sessionId(), request.keywords(), request.description())
 			);
 		}
+		log.info("[AI_INGEST] MindFrequencyService saving completed flag sessionId={}", request.sessionId());
 		aiSessionRedisService.saveCompleted(request.sessionId(), Duration.ofHours(1));
+		log.info("[AI_INGEST] MindFrequencyService.create completed sessionId={}", request.sessionId());
 	}
 
 	@Transactional(readOnly = true)
