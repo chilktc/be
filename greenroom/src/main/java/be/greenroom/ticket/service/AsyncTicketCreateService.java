@@ -42,11 +42,11 @@ public class AsyncTicketCreateService {
 				null
 			)
 		);
-		Preconditions.validate(response != null && response.name() != null, ErrorCode.INTERNAL_SERVER_ERROR);
+		Preconditions.validate(response != null, ErrorCode.INTERNAL_SERVER_ERROR);
 
-		Ticket ticket = Ticket.create(
+		Ticket ticket = Ticket.createWithSession(
 			userId,
-			response.name(),
+			sessionId,
 			request.situation(),
 			request.thought(),
 			request.action(),
