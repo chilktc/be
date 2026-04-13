@@ -17,7 +17,6 @@ import be.greenroom.notification.event.GreenroomTicketCreatedEvent;
 import be.greenroom.notification.service.GreenroomNotificationEventPublisher;
 import be.greenroom.ticket.domain.Ticket;
 import be.greenroom.ticket.dto.request.CreateTicketRequest;
-import be.greenroom.ticket.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,41 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 public class AsyncTicketCreateService {
 
 	private final AiServerClient aiServerClient;
-	private final TicketRepository ticketRepository;
+	private final TicketPersistenceService ticketPersistenceService;
 	private final GreenroomNotificationEventPublisher eventPublisher;
 
 	@Async
 	@Transactional
 	public void createPodcastAndSaveTicket(UUID userId, String sessionId, CreateTicketRequest request) {
 		log.info("[AI_TICKET][ASYNC] start createPodcastAndSaveTicket userId={}, sessionId={}", userId, sessionId);
-		Ticket ticket = ticketRepository.findBySessionId(sessionId)
-			.map(existing -> {
-				log.info("[AI_TICKET][ASYNC] found existing ticket ticketId={}, sessionId={}, updating fields", existing.getId(), sessionId);
-				existing.updateForAiSession(
-					userId,
-					sessionId,
-					request.situation(),
-					request.thought(),
-					request.action(),
-					request.colleagueReaction()
-				);
-				return existing;
-			})
-			.orElseGet(() -> {
-				log.info("[AI_TICKET][ASYNC] creating ticket entity userId={}, sessionId={}", userId, sessionId);
-				return Ticket.createWithSession(
-					userId,
-					sessionId,
-					request.situation(),
-					request.thought(),
-					request.action(),
-					request.colleagueReaction()
-				);
-			});
-
-		log.info("[AI_TICKET][ASYNC] saving and flushing ticket before AI call userId={}, sessionId={}", userId, sessionId);
-		Ticket saved = ticketRepository.saveAndFlush(ticket);
-		log.info("[AI_TICKET][ASYNC] ticket persisted before AI call ticketId={}, userId={}, sessionId={}", saved.getId(), saved.getUserId(), sessionId);
+		log.info("[AI_TICKET][ASYNC] persisting ticket in REQUIRES_NEW transaction before AI call userId={}, sessionId={}", userId, sessionId);
+		Ticket saved = ticketPersistenceService.saveOrUpdateAiTicket(userId, sessionId, request);
+		log.info("[AI_TICKET][ASYNC] ticket ready before AI call ticketId={}, userId={}, sessionId={}", saved.getId(), saved.getUserId(), sessionId);
 
 		log.info("[AI_TICKET][ASYNC] requesting AI podcast episode userId={}, sessionId={}", userId, sessionId);
 		PodcastEpisodeResponse response = aiServerClient.createPodcastEpisode(
