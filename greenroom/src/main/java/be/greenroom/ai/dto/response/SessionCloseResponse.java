@@ -1,11 +1,13 @@
 package be.greenroom.ai.dto.response;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record SessionCloseResponse(
+	@JsonProperty("success")
 	boolean success,
+	@JsonProperty("message")
 	String message
 ) {
 }
