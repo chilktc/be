@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/notifications")
+@RequestMapping("/notification")
 @RequiredArgsConstructor
 @Tag(name = "Greenroom Notification", description = "그린룸 알림 조회 API")
 public class GreenroomNotificationQueryController {
