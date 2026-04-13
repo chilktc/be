@@ -25,10 +25,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "AI Ticket", description = "AI 연동 티켓 생성 API")
 @RestController
 @Validated
+@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/greenroom/ai/tickets")
 public class AiTicketController {
@@ -47,8 +49,18 @@ public class AiTicketController {
 		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
 		@RequestBody @Valid CreateTicketRequest request
 	) {
+		log.info(
+			"[AI_TICKET] createWithAi request received userIdHeader={}, situationLength={}, thoughtLength={}, actionLength={}, hasColleagueReaction={}",
+			userIdHeader,
+			request.situation() != null ? request.situation().length() : 0,
+			request.thought() != null ? request.thought().length() : 0,
+			request.action() != null ? request.action().length() : 0,
+			request.colleagueReaction() != null && !request.colleagueReaction().isBlank()
+		);
 		UUID userId = UUID.fromString(userIdHeader);
+		log.info("[AI_TICKET] parsed userId={}", userId);
 		String sessionId = ticketService.createWithAi(userId, request);
+		log.info("[AI_TICKET] createWithAi completed userId={}, sessionId={}", userId, sessionId);
 		return ResponseEntity.status(HttpStatus.ACCEPTED)
 			.header("X-AI-Session-Id", sessionId)
 			.body(ApiResult.ok());

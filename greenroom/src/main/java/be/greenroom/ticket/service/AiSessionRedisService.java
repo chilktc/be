@@ -7,8 +7,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class AiSessionRedisService {
 
@@ -26,6 +28,7 @@ public class AiSessionRedisService {
 	}
 
 	public void save(UUID userId, String sessionId, Duration ttl) {
+		log.info("[AI_TICKET][REDIS] save userId={}, sessionId={}, ttlSeconds={}", userId, sessionId, ttl.getSeconds());
 		redisTemplate.opsForValue().set(key(userId), sessionId, ttl);
 	}
 
@@ -34,10 +37,12 @@ public class AiSessionRedisService {
 	}
 
 	public void delete(UUID userId) {
+		log.info("[AI_TICKET][REDIS] delete userId={}", userId);
 		redisTemplate.delete(key(userId));
 	}
 
 	public void saveCompleted(String sessionId, Duration ttl) {
+		log.info("[AI_TICKET][REDIS] saveCompleted sessionId={}, ttlSeconds={}", sessionId, ttl.getSeconds());
 		redisTemplate.opsForValue().set(completedKey(sessionId), Boolean.TRUE.toString(), ttl);
 	}
 }
