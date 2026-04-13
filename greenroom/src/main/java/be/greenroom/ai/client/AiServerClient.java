@@ -20,7 +20,7 @@ public class AiServerClient {
 
 	public SessionCreateResponse createSession(SessionCreateRequest request) {
 		return aiWebClient.post()
-			.uri("/api/v1/sessions")
+			.uri("/api/sessions")
 			.bodyValue(request)
 			.retrieve()
 			.bodyToMono(SessionCreateResponse.class)
@@ -29,7 +29,7 @@ public class AiServerClient {
 
 	public PodcastEpisodeResponse createPodcastEpisode(PodcastEpisodeRequest request) {
 		return aiWebClient.post()
-			.uri("/api/v1/podcasts/episodes")
+			.uri("/api/podcasts/episodes")
 			.bodyValue(request)
 			.retrieve()
 			.bodyToMono(PodcastEpisodeResponse.class)
@@ -38,7 +38,7 @@ public class AiServerClient {
 
 	public void selectStory(AiStorySelectionRequest request) {
 		aiWebClient.post()
-			.uri("/api/v1/stories/select")
+			.uri("/api/stories/select")
 			.bodyValue(request)
 			.retrieve()
 			.toBodilessEntity()
