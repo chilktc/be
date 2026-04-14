@@ -17,6 +17,7 @@ import be.common.api.ApiResult;
 import be.greenroom.ai.dto.request.StorySelectionRequest;
 import be.greenroom.ai.dto.response.AiTicketCreateResponse;
 import be.greenroom.ai.dto.response.MindFrequencyResponse;
+import be.greenroom.ai.dto.response.MindFrequencyWithPodcastResponse;
 import be.greenroom.ai.dto.response.PodcastResponse;
 import be.greenroom.ai.service.AiStorySelectionService;
 import be.greenroom.ai.service.MindFrequencyService;
@@ -80,7 +81,7 @@ public class AiTicketController {
 	@Operation(summary = "마음 주파수 조회 by ticketId", description = "ticketId로 마음 주파수를 조회하며, 트래킹이 이미 완료되었다면 에러를 반환합니다.")
 	@GetMapping("/mind-frequencies/{ticketId}")
 	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<MindFrequencyResponse> getMindFrequencyByTicketId(
+	public ApiResult<MindFrequencyWithPodcastResponse> getMindFrequencyByTicketId(
 		@PathVariable UUID ticketId
 	) {
 		return ApiResult.ok(mindFrequencyService.getByTicketId(ticketId));

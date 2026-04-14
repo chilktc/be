@@ -66,7 +66,7 @@ class TrackingServiceTest {
 		when(trackingRepository.save(any(Tracking.class))).thenAnswer(invocation -> invocation.getArgument(0));
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.RESOLVED,
-			ResolvedHelpType.DIALOGUE_AND_EXPRESSION,
+			ResolvedHelpType.COMMUNICATION_RESOLVED,
 			null,
 			ResolvedStateType.FULLY_DONE,
 			null,
@@ -100,9 +100,9 @@ class TrackingServiceTest {
 			null,
 			null,
 			null,
-			UnresolvedBlockerType.EXECUTION_IS_HARD,
+			UnresolvedBlockerType.HARD_TO_ACT,
 			null,
-			UnresolvedNeedType.SMALL_EXECUTABLE_ACTION,
+			UnresolvedNeedType.NEED_SMALL_ACTION,
 			null
 		);
 
@@ -111,6 +111,68 @@ class TrackingServiceTest {
 
 		// then
 		verify(eventPublisher, never()).publish(any(), any());
+	}
+
+	@Test
+	@DisplayName("해결 상태에서 ETC 선택 시 resolvedHelpOther는 내부적으로 ETC로 저장된다")
+	void 해결_ETC_기타값_내부저장() {
+		// given
+		UUID userId = UUID.randomUUID();
+		UUID ticketId = UUID.randomUUID();
+		Ticket ticket = Ticket.create(userId, "n", "s", "t", "a", "c");
+		ReflectionTestUtils.setField(ticket, "id", ticketId);
+		when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+		when(trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(false);
+		when(trackingRepository.save(any(Tracking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		CreateTrackingRequest request = new CreateTrackingRequest(
+			TrackingStatus.RESOLVED,
+			ResolvedHelpType.ETC,
+			null,
+			ResolvedStateType.FULLY_DONE,
+			null,
+			null,
+			null,
+			"끝남"
+		);
+
+		// when
+		trackingService.create(userId, ticketId, request);
+
+		// then
+		ArgumentCaptor<Tracking> trackingCaptor = ArgumentCaptor.forClass(Tracking.class);
+		verify(trackingRepository).save(trackingCaptor.capture());
+		assertThat(trackingCaptor.getValue().getResolvedHelpOther()).isEqualTo("ETC");
+	}
+
+	@Test
+	@DisplayName("미해결 상태에서 ETC 선택 시 unresolvedBlockerOther는 내부적으로 ETC로 저장된다")
+	void 미해결_ETC_기타값_내부저장() {
+		// given
+		UUID userId = UUID.randomUUID();
+		UUID ticketId = UUID.randomUUID();
+		Ticket ticket = Ticket.create(userId, "n", "s", "t", "a", "c");
+		ReflectionTestUtils.setField(ticket, "id", ticketId);
+		when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+		when(trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(false);
+		when(trackingRepository.save(any(Tracking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		CreateTrackingRequest request = new CreateTrackingRequest(
+			TrackingStatus.UNRESOLVED,
+			null,
+			null,
+			null,
+			UnresolvedBlockerType.ETC,
+			null,
+			UnresolvedNeedType.NEED_SMALL_ACTION,
+			null
+		);
+
+		// when
+		trackingService.create(userId, ticketId, request);
+
+		// then
+		ArgumentCaptor<Tracking> trackingCaptor = ArgumentCaptor.forClass(Tracking.class);
+		verify(trackingRepository).save(trackingCaptor.capture());
+		assertThat(trackingCaptor.getValue().getUnresolvedBlockerOther()).isEqualTo("ETC");
 	}
 
 	@Test
@@ -125,12 +187,12 @@ class TrackingServiceTest {
 		when(trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)).thenReturn(false);
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.RESOLVED,
-			ResolvedHelpType.DIALOGUE_AND_EXPRESSION,
+			ResolvedHelpType.COMMUNICATION_RESOLVED,
 			null,
 			ResolvedStateType.FULLY_DONE,
-			UnresolvedBlockerType.EXECUTION_IS_HARD,
+			UnresolvedBlockerType.HARD_TO_ACT,
 			null,
-			UnresolvedNeedType.SMALL_EXECUTABLE_ACTION,
+			UnresolvedNeedType.NEED_SMALL_ACTION,
 			null
 		);
 
@@ -154,9 +216,9 @@ class TrackingServiceTest {
 			null,
 			null,
 			null,
-			UnresolvedBlockerType.EXECUTION_IS_HARD,
+			UnresolvedBlockerType.HARD_TO_ACT,
 			null,
-			UnresolvedNeedType.SMALL_EXECUTABLE_ACTION,
+			UnresolvedNeedType.NEED_SMALL_ACTION,
 			null
 		);
 
@@ -182,8 +244,8 @@ class TrackingServiceTest {
 			.ticketId(ticketId)
 			.userId(userId)
 			.status(TrackingStatus.UNRESOLVED)
-			.unresolvedBlockerType(UnresolvedBlockerType.DONT_KNOW_WHERE_TO_START)
-			.unresolvedNeedType(UnresolvedNeedType.ORGANIZE_OBJECTIVELY)
+			.unresolvedBlockerType(UnresolvedBlockerType.DONT_KNOW_WHAT_TO_DO)
+			.unresolvedNeedType(UnresolvedNeedType.ORGANIZE_SITUATION_LOGICALLY)
 			.note("정리필요")
 			.build();
 		ReflectionTestUtils.setField(first, "createdAt", LocalDateTime.of(2026, 3, 8, 8, 30));
@@ -192,8 +254,8 @@ class TrackingServiceTest {
 			.ticketId(ticketId)
 			.userId(userId)
 			.status(TrackingStatus.RESOLVED)
-			.resolvedHelpType(ResolvedHelpType.NATURAL_OVER_TIME)
-			.resolvedStateType(ResolvedStateType.MOSTLY_OK_SOMETIMES)
+			.resolvedHelpType(ResolvedHelpType.TIME_NATURALLY_RESOLVED)
+			.resolvedStateType(ResolvedStateType.MOSTLY_OK_SOMETIMES_RECALL)
 			.build();
 		ReflectionTestUtils.setField(second, "createdAt", LocalDateTime.of(2026, 3, 2, 8, 30));
 
