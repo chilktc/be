@@ -1,6 +1,7 @@
 package be.greenroom.ai.service;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -26,19 +27,26 @@ public class MindFrequencyService {
 
 	@Transactional
 	public void create(CreateMindFrequencyRequest request) {
+		List<String> normalizedKeywords = request.keywords().stream()
+			.map(String::trim)
+			.filter(keyword -> !keyword.isBlank())
+			.distinct()
+			.toList();
+
 		log.info(
-			"[AI_INGEST] MindFrequencyService.create start sessionId={}, keywordsCount={}",
+			"[AI_INGEST] MindFrequencyService.create start sessionId={}, keywordsCount={}, normalizedKeywordsCount={}",
 			request.sessionId(),
-			request.keywords() != null ? request.keywords().size() : 0
+			request.keywords() != null ? request.keywords().size() : 0,
+			normalizedKeywords.size()
 		);
 		Optional<MindFrequency> existing = mindFrequencyRepository.findBySessionId(request.sessionId());
 		if (existing.isPresent()) {
 			log.info("[AI_INGEST] MindFrequencyService updating existing sessionId={}", request.sessionId());
-			existing.get().update(request.keywords(), request.description());
+			existing.get().update(normalizedKeywords, request.description());
 		} else {
 			log.info("[AI_INGEST] MindFrequencyService creating new sessionId={}", request.sessionId());
 			mindFrequencyRepository.save(
-				MindFrequency.create(request.sessionId(), request.keywords(), request.description())
+				MindFrequency.create(request.sessionId(), normalizedKeywords, request.description())
 			);
 		}
 		log.info("[AI_INGEST] MindFrequencyService saving completed flag sessionId={}", request.sessionId());
