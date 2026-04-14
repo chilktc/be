@@ -2,7 +2,6 @@ package be.greenroom.ai.controller;
 
 import java.util.UUID;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import be.common.api.ApiResult;
 import be.greenroom.ai.dto.request.StorySelectionRequest;
+import be.greenroom.ai.dto.response.AiTicketCreateResponse;
 import be.greenroom.ai.dto.response.MindFrequencyResponse;
 import be.greenroom.ai.dto.response.PodcastResponse;
 import be.greenroom.ai.service.AiStorySelectionService;
@@ -44,11 +44,11 @@ public class AiTicketController {
 
 	@Operation(
 		summary = "AI 연동 입장권 생성",
-		description = "세션 생성 후 세션 ID를 응답 헤더로 반환하고, 팟캐스트 생성 및 티켓 저장은 비동기로 처리합니다."
+		description = "세션 생성 후 세션 ID를 응답 body로 반환하고, 팟캐스트 생성 및 티켓 저장은 비동기로 처리합니다."
 	)
 	@PostMapping
 	@ResponseStatus(HttpStatus.ACCEPTED)
-	public ResponseEntity<ApiResult<Void>> createWithAi(
+	public ApiResult<AiTicketCreateResponse> createWithAi(
 		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
 		@RequestBody @Valid CreateTicketRequest request
 	) {
@@ -64,9 +64,7 @@ public class AiTicketController {
 		log.info("[AI_TICKET] parsed userId={}", userId);
 		String sessionId = ticketService.createWithAi(userId, request);
 		log.info("[AI_TICKET] createWithAi completed userId={}, sessionId={}", userId, sessionId);
-		return ResponseEntity.status(HttpStatus.ACCEPTED)
-			.header("X-AI-Session-Id", sessionId)
-			.body(ApiResult.ok());
+		return ApiResult.ok(new AiTicketCreateResponse(sessionId));
 	}
 
 	@Operation(summary = "마음 주파수 조회", description = "헤더의 sessionId로 마음 주파수를 조회합니다.")
