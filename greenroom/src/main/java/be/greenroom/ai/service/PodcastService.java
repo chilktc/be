@@ -1,5 +1,7 @@
 package be.greenroom.ai.service;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,5 +50,12 @@ public class PodcastService {
 		return podcastRepository.findBySessionId(sessionId)
 			.map(PodcastResponse::from)
 			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_PODCAST));
+	}
+
+	@Transactional(readOnly = true)
+	public PodcastResponse getByTicketId(UUID ticketId) {
+		Ticket ticket = ticketRepository.findById(ticketId)
+			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
+		return getBySessionId(ticket.getSessionId());
 	}
 }
