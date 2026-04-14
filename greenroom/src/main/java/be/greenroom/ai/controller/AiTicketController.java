@@ -96,6 +96,15 @@ public class AiTicketController {
 		return ApiResult.ok(podcastService.getBySessionId(sessionId));
 	}
 
+	@Operation(summary = "팟캐스트 조회 by ticketId", description = "ticketId로 팟캐스트를 조회합니다.")
+	@GetMapping("/podcast/{ticketId}")
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResult<PodcastResponse> getPodcastByTicketId(
+		@PathVariable UUID ticketId
+	) {
+		return ApiResult.ok(podcastService.getByTicketId(ticketId));
+	}
+
 	@Operation(summary = "선택한 스토리 전달", description = "헤더의 sessionId와 요청의 storyId를 합쳐 AI 서버에 전달합니다.")
 	@PostMapping("/story-selection")
 	@ResponseStatus(HttpStatus.OK)
