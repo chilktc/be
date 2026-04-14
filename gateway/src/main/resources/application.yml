@@ -23,6 +23,7 @@ spring:
                   - http://localhost:3000
                   - https://bloom-chil.com
                   - https://api.bloom-chil.com
+                  - https://bloom-chil-test.vercel.app/
                 allowed-methods:
                   - GET
                   - POST
