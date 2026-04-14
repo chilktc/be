@@ -112,6 +112,7 @@ public class GreenroomNotificationQueryService {
 
 	private int calculateDayOffset(int sequence) {
 		return switch (sequence) {
+			case 0 -> 0;
 			case 1 -> 1;
 			case 2 -> 3;
 			case 3 -> 7;
