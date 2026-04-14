@@ -13,7 +13,9 @@ import be.common.api.ErrorCode;
 import be.greenroom.ai.domain.MindFrequency;
 import be.greenroom.ai.dto.request.CreateMindFrequencyRequest;
 import be.greenroom.ai.dto.response.MindFrequencyResponse;
+import be.greenroom.ai.dto.response.MindFrequencyWithPodcastResponse;
 import be.greenroom.ai.repository.MindFrequencyRepository;
+import be.greenroom.ai.repository.PodcastRepository;
 import be.greenroom.ticket.domain.Ticket;
 import be.greenroom.ticket.repository.TicketRepository;
 import be.greenroom.ticket.service.AiSessionRedisService;
@@ -28,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MindFrequencyService {
 
 	private final MindFrequencyRepository mindFrequencyRepository;
+	private final PodcastRepository podcastRepository;
 	private final AiSessionRedisService aiSessionRedisService;
 	private final TicketRepository ticketRepository;
 	private final TrackingRepository trackingRepository;
@@ -72,13 +75,18 @@ public class MindFrequencyService {
 	}
 
 	@Transactional(readOnly = true)
-	public MindFrequencyResponse getByTicketId(UUID ticketId) {
+	public MindFrequencyWithPodcastResponse getByTicketId(UUID ticketId) {
 		if (trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)) {
 			throw new CustomException(ErrorCode.ALREADY_RESOLVED_TICKET);
 		}
 
-		return mindFrequencyRepository.findByTicketId(ticketId)
-			.map(MindFrequencyResponse::from)
+		MindFrequency mindFrequency = mindFrequencyRepository.findByTicketId(ticketId)
 			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_MIND_FREQUENCY));
+
+		String imageUrl = podcastRepository.findBySessionId(mindFrequency.getSessionId())
+			.map(podcast -> podcast.getImageUrl())
+			.orElse(null);
+
+		return MindFrequencyWithPodcastResponse.from(mindFrequency, imageUrl);
 	}
 }

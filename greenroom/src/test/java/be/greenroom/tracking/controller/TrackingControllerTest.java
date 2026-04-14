@@ -51,7 +51,7 @@ class TrackingControllerTest {
 		String body = """
 			{
 			  "status":"RESOLVED",
-			  "resolvedHelpType":"DIALOGUE_AND_EXPRESSION",
+			  "resolvedHelpType":"COMMUNICATION_RESOLVED",
 			  "resolvedStateType":"FULLY_DONE",
 			  "note":"정리됨"
 			}
@@ -80,8 +80,8 @@ class TrackingControllerTest {
 				LocalDateTime.of(2026, 3, 9, 8, 30),
 				"D+8",
 				null,
-				ResolvedHelpType.ACTION_CHANGED_SITUATION,
-				ResolvedStateType.MOSTLY_OK_SOMETIMES,
+				ResolvedHelpType.RECOMMENDED_ACTION_WORKED,
+				ResolvedStateType.MOSTLY_OK_SOMETIMES_RECALL,
 				null,
 				null
 			)
