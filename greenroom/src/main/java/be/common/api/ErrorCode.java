@@ -15,6 +15,8 @@ public enum ErrorCode {
 	DOES_NOT_EXIST_TICKET(HttpStatus.BAD_REQUEST, "존재하지 않는 티켓 id입니다."),
 	DOES_NOT_EXIST_MIND_FREQUENCY(HttpStatus.BAD_REQUEST, "마음 주파수가 존재하지 않습니다."),
 	DOES_NOT_EXIST_PODCAST(HttpStatus.BAD_REQUEST, "팟캐스트가 존재하지 않습니다."),
+	KNOWLEDGE_IDS_REQUIRED(HttpStatus.BAD_REQUEST, "knowledge ids 파라미터는 필수입니다."),
+	KNOWLEDGE_IDS_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "knowledge ids는 최대 10개까지 조회할 수 있습니다."),
 	NO_TICKET_ACCESS(HttpStatus.FORBIDDEN, "해당 티켓에 접근 권한이 없습니다."),
 	ALREADY_RESOLVED_TICKET(HttpStatus.BAD_REQUEST, "이미 해결된 티켓입니다."),
 	TRACKING_RESOLVED_FIELDS_REQUIRED(HttpStatus.BAD_REQUEST, "해결 상태에서는 해결 필드가 필수입니다."),
