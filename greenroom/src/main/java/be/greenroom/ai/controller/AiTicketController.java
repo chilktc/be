@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import be.common.api.ApiResult;
 import be.greenroom.ai.dto.request.StorySelectionRequest;
 import be.greenroom.ai.dto.response.MindFrequencyResponse;
+import be.greenroom.ai.dto.response.PodcastResponse;
 import be.greenroom.ai.service.AiStorySelectionService;
 import be.greenroom.ai.service.MindFrequencyService;
+import be.greenroom.ai.service.PodcastService;
 import be.greenroom.ticket.dto.request.CreateTicketRequest;
 import be.greenroom.ticket.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +39,7 @@ public class AiTicketController {
 
 	private final TicketService ticketService;
 	private final MindFrequencyService mindFrequencyService;
+	private final PodcastService podcastService;
 	private final AiStorySelectionService aiStorySelectionService;
 
 	@Operation(
@@ -73,6 +76,15 @@ public class AiTicketController {
 		@RequestHeader("X-AI-Session-Id") @NotBlank String sessionId
 	) {
 		return ApiResult.ok(mindFrequencyService.getBySessionId(sessionId));
+	}
+
+	@Operation(summary = "팟캐스트 조회", description = "헤더의 sessionId로 팟캐스트를 조회합니다.")
+	@GetMapping("/podcast")
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResult<PodcastResponse> getPodcast(
+		@RequestHeader("X-AI-Session-Id") @NotBlank String sessionId
+	) {
+		return ApiResult.ok(podcastService.getBySessionId(sessionId));
 	}
 
 	@Operation(summary = "선택한 스토리 전달", description = "헤더의 sessionId와 요청의 storyId를 합쳐 AI 서버에 전달합니다.")
