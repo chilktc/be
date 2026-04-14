@@ -25,7 +25,7 @@ class TrackingRequestValidatorTest {
 		// given
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.RESOLVED,
-			ResolvedHelpType.DIALOGUE_AND_EXPRESSION,
+			ResolvedHelpType.COMMUNICATION_RESOLVED,
 			null,
 			ResolvedStateType.FULLY_DONE,
 			null,
@@ -66,12 +66,12 @@ class TrackingRequestValidatorTest {
 		// given
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.RESOLVED,
-			ResolvedHelpType.DIALOGUE_AND_EXPRESSION,
+			ResolvedHelpType.COMMUNICATION_RESOLVED,
 			null,
 			ResolvedStateType.FULLY_DONE,
-			UnresolvedBlockerType.EXECUTION_IS_HARD,
+			UnresolvedBlockerType.HARD_TO_ACT,
 			null,
-			UnresolvedNeedType.SMALL_EXECUTABLE_ACTION,
+			UnresolvedNeedType.NEED_SMALL_ACTION,
 			null
 		);
 
@@ -83,14 +83,14 @@ class TrackingRequestValidatorTest {
 	}
 
 	@Test
-	@DisplayName("해결 상태에서 ETC 선택 후 기타값 누락 시 예외가 발생한다")
-	void 해결_ETC_기타값누락_예외() {
+	@DisplayName("해결 상태에서 ETC 선택 후 기타값 없이도 검증을 통과한다")
+	void 해결_ETC_기타값없어도_검증통과() {
 		// given
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.RESOLVED,
 			ResolvedHelpType.ETC,
 			null,
-			ResolvedStateType.MOSTLY_OK_SOMETIMES,
+			ResolvedStateType.MOSTLY_OK_SOMETIMES_RECALL,
 			null,
 			null,
 			null,
@@ -98,10 +98,7 @@ class TrackingRequestValidatorTest {
 		);
 
 		// when then
-		assertThatThrownBy(() -> validator.validate(request))
-			.isInstanceOf(CustomException.class)
-			.extracting(e -> ((CustomException)e).getErrorCode())
-			.isEqualTo(ErrorCode.TRACKING_RESOLVED_ETC_REQUIRED);
+		assertThatCode(() -> validator.validate(request)).doesNotThrowAnyException();
 	}
 
 	@Test
@@ -113,9 +110,9 @@ class TrackingRequestValidatorTest {
 			null,
 			null,
 			null,
-			UnresolvedBlockerType.EXECUTION_IS_HARD,
+			UnresolvedBlockerType.HARD_TO_ACT,
 			null,
-			UnresolvedNeedType.SMALL_EXECUTABLE_ACTION,
+			UnresolvedNeedType.NEED_SMALL_ACTION,
 			"아직 힘듦"
 		);
 
@@ -151,12 +148,12 @@ class TrackingRequestValidatorTest {
 		// given
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.UNRESOLVED,
-			ResolvedHelpType.DIALOGUE_AND_EXPRESSION,
+			ResolvedHelpType.COMMUNICATION_RESOLVED,
 			null,
 			ResolvedStateType.FULLY_DONE,
-			UnresolvedBlockerType.EXECUTION_IS_HARD,
+			UnresolvedBlockerType.HARD_TO_ACT,
 			null,
-			UnresolvedNeedType.SMALL_EXECUTABLE_ACTION,
+			UnresolvedNeedType.NEED_SMALL_ACTION,
 			null
 		);
 
@@ -168,8 +165,8 @@ class TrackingRequestValidatorTest {
 	}
 
 	@Test
-	@DisplayName("미해결 상태에서 ETC 선택 후 기타값 누락 시 예외가 발생한다")
-	void 미해결_ETC_기타값누락_예외() {
+	@DisplayName("미해결 상태에서 ETC 선택 후 기타값 없이도 검증을 통과한다")
+	void 미해결_ETC_기타값없어도_검증통과() {
 		// given
 		CreateTrackingRequest request = new CreateTrackingRequest(
 			TrackingStatus.UNRESOLVED,
@@ -178,7 +175,26 @@ class TrackingRequestValidatorTest {
 			null,
 			UnresolvedBlockerType.ETC,
 			null,
-			UnresolvedNeedType.SMALL_EXECUTABLE_ACTION,
+			UnresolvedNeedType.NEED_SMALL_ACTION,
+			null
+		);
+
+		// when then
+		assertThatCode(() -> validator.validate(request)).doesNotThrowAnyException();
+	}
+
+	@Test
+	@DisplayName("해결 상태에서 기타값을 보내면 예외가 발생한다")
+	void 해결_기타값전달_예외() {
+		// given
+		CreateTrackingRequest request = new CreateTrackingRequest(
+			TrackingStatus.RESOLVED,
+			ResolvedHelpType.ETC,
+			"사용자 입력",
+			ResolvedStateType.MOSTLY_OK_SOMETIMES_RECALL,
+			null,
+			null,
+			null,
 			null
 		);
 
@@ -186,6 +202,28 @@ class TrackingRequestValidatorTest {
 		assertThatThrownBy(() -> validator.validate(request))
 			.isInstanceOf(CustomException.class)
 			.extracting(e -> ((CustomException)e).getErrorCode())
-			.isEqualTo(ErrorCode.TRACKING_UNRESOLVED_ETC_REQUIRED);
+			.isEqualTo(ErrorCode.TRACKING_RESOLVED_ETC_FORBIDDEN);
+	}
+
+	@Test
+	@DisplayName("미해결 상태에서 기타값을 보내면 예외가 발생한다")
+	void 미해결_기타값전달_예외() {
+		// given
+		CreateTrackingRequest request = new CreateTrackingRequest(
+			TrackingStatus.UNRESOLVED,
+			null,
+			null,
+			null,
+			UnresolvedBlockerType.ETC,
+			"사용자 입력",
+			UnresolvedNeedType.NEED_SMALL_ACTION,
+			null
+		);
+
+		// when then
+		assertThatThrownBy(() -> validator.validate(request))
+			.isInstanceOf(CustomException.class)
+			.extracting(e -> ((CustomException)e).getErrorCode())
+			.isEqualTo(ErrorCode.TRACKING_UNRESOLVED_ETC_FORBIDDEN);
 	}
 }

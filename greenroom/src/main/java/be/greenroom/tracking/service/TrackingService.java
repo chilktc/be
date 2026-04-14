@@ -17,8 +17,10 @@ import be.greenroom.notification.event.GreenroomTicketResolvedEvent;
 import be.greenroom.notification.service.GreenroomNotificationEventPublisher;
 import be.greenroom.ticket.domain.Ticket;
 import be.greenroom.ticket.repository.TicketRepository;
+import be.greenroom.tracking.domain.ResolvedHelpType;
 import be.greenroom.tracking.domain.Tracking;
 import be.greenroom.tracking.domain.TrackingStatus;
+import be.greenroom.tracking.domain.UnresolvedBlockerType;
 import be.greenroom.tracking.dto.request.CreateTrackingRequest;
 import be.greenroom.tracking.dto.response.TrackingHistoryItemResponse;
 import be.greenroom.tracking.repository.TrackingRepository;
@@ -46,10 +48,10 @@ public class TrackingService {
 			.userId(userId)
 			.status(request.status())
 			.resolvedHelpType(request.resolvedHelpType())
-			.resolvedHelpOther(request.resolvedHelpOther())
+			.resolvedHelpOther(resolveResolvedHelpOther(request))
 			.resolvedStateType(request.resolvedStateType())
 			.unresolvedBlockerType(request.unresolvedBlockerType())
-			.unresolvedBlockerOther(request.unresolvedBlockerOther())
+			.unresolvedBlockerOther(resolveUnresolvedBlockerOther(request))
 			.unresolvedNeedType(request.unresolvedNeedType())
 			.note(request.note())
 			.build();
@@ -98,5 +100,19 @@ public class TrackingService {
 
 	private void validateAlreadyResolved(UUID ticketId) {
 		Preconditions.validate(!trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED), ErrorCode.ALREADY_RESOLVED_TICKET);
+	}
+
+	private String resolveResolvedHelpOther(CreateTrackingRequest request) {
+		if (request.resolvedHelpType() == ResolvedHelpType.ETC) {
+			return ResolvedHelpType.ETC.name();
+		}
+		return null;
+	}
+
+	private String resolveUnresolvedBlockerOther(CreateTrackingRequest request) {
+		if (request.unresolvedBlockerType() == UnresolvedBlockerType.ETC) {
+			return UnresolvedBlockerType.ETC.name();
+		}
+		return null;
 	}
 }

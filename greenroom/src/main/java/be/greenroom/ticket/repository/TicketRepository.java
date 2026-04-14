@@ -24,6 +24,7 @@ public interface TicketRepository extends JpaRepository<Ticket, UUID> {
         )
         from Ticket t
         where t.userId = :userId
+          and t.name is not null
           and (:cursorCreatedAt is null or t.createdAt < :cursorCreatedAt)
         order by t.createdAt desc
     """)

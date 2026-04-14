@@ -29,12 +29,7 @@ public class TrackingRequestValidator {
 			|| request.unresolvedNeedType() != null) {
 			throw new CustomException(ErrorCode.TRACKING_UNRESOLVED_FIELDS_FORBIDDEN);
 		}
-		if (request.resolvedHelpType() == ResolvedHelpType.ETC
-			&& isBlank(request.resolvedHelpOther())) {
-			throw new CustomException(ErrorCode.TRACKING_RESOLVED_ETC_REQUIRED);
-		}
-		if (request.resolvedHelpType() != ResolvedHelpType.ETC
-			&& request.resolvedHelpOther() != null) {
+		if (request.resolvedHelpOther() != null) {
 			throw new CustomException(ErrorCode.TRACKING_RESOLVED_ETC_FORBIDDEN);
 		}
 	}
@@ -48,17 +43,8 @@ public class TrackingRequestValidator {
 			|| request.resolvedStateType() != null) {
 			throw new CustomException(ErrorCode.TRACKING_RESOLVED_FIELDS_FORBIDDEN);
 		}
-		if (request.unresolvedBlockerType() == UnresolvedBlockerType.ETC
-			&& isBlank(request.unresolvedBlockerOther())) {
-			throw new CustomException(ErrorCode.TRACKING_UNRESOLVED_ETC_REQUIRED);
-		}
-		if (request.unresolvedBlockerType() != UnresolvedBlockerType.ETC
-			&& request.unresolvedBlockerOther() != null) {
+		if (request.unresolvedBlockerOther() != null) {
 			throw new CustomException(ErrorCode.TRACKING_UNRESOLVED_ETC_FORBIDDEN);
 		}
-	}
-
-	private boolean isBlank(String value) {
-		return value == null || value.isBlank();
 	}
 }
