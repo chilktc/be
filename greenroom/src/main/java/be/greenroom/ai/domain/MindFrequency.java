@@ -27,6 +27,9 @@ public class MindFrequency {
 	@Column(nullable = false, unique = true)
 	private String sessionId;
 
+	@Column(nullable = false)
+	private UUID ticketId;
+
 	@Column(nullable = false, length = 1000)
 	private String keywords;
 
@@ -36,15 +39,16 @@ public class MindFrequency {
 	@Column(nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
-	private MindFrequency(String sessionId, String keywords, String description) {
+	private MindFrequency(UUID ticketId, String sessionId, String keywords, String description) {
 		this.id = UUID.randomUUID();
+		this.ticketId = ticketId;
 		this.sessionId = sessionId;
 		this.keywords = keywords;
 		this.description = description;
 	}
 
-	public static MindFrequency create(String sessionId, List<String> keywords, String description) {
-		return new MindFrequency(sessionId, String.join(",", keywords), description);
+	public static MindFrequency create(UUID ticketId, String sessionId, List<String> keywords, String description) {
+		return new MindFrequency(ticketId, sessionId, String.join(",", keywords), description);
 	}
 
 	public void update(List<String> keywords, String description) {

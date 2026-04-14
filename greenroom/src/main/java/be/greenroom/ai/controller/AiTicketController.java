@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -74,6 +75,15 @@ public class AiTicketController {
 		@RequestHeader("X-AI-Session-Id") @NotBlank String sessionId
 	) {
 		return ApiResult.ok(mindFrequencyService.getBySessionId(sessionId));
+	}
+
+	@Operation(summary = "마음 주파수 조회 by ticketId", description = "ticketId로 마음 주파수를 조회하며, 트래킹이 이미 완료되었다면 에러를 반환합니다.")
+	@GetMapping("/mind-frequencies/{ticketId}")
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResult<MindFrequencyResponse> getMindFrequencyByTicketId(
+		@PathVariable UUID ticketId
+	) {
+		return ApiResult.ok(mindFrequencyService.getByTicketId(ticketId));
 	}
 
 	@Operation(summary = "팟캐스트 조회", description = "헤더의 sessionId로 팟캐스트를 조회합니다.")

@@ -10,4 +10,5 @@ import be.greenroom.ai.domain.MindFrequency;
 public interface MindFrequencyRepository extends JpaRepository<MindFrequency, UUID> {
 
 	Optional<MindFrequency> findBySessionId(String sessionId);
+	Optional<MindFrequency> findByTicketId(UUID ticketId);
 }
