@@ -1,16 +1,20 @@
 package be.notification.service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import be.notification.domain.GreenroomNotificationProcessedEvent;
+import be.notification.domain.GreenroomNotificationHistory;
 import be.notification.domain.GreenroomNotificationTarget;
 import be.notification.domain.GreenroomNotificationUserPreference;
+import be.notification.domain.NotificationChannel;
 import be.notification.event.GreenroomTicketCreatedEvent;
 import be.notification.event.GreenroomTicketResolvedEvent;
 import be.notification.event.GreenroomUserNotificationPreferenceUpdatedEvent;
+import be.notification.repository.GreenroomNotificationHistoryRepository;
 import be.notification.repository.GreenroomNotificationProcessedEventRepository;
 import be.notification.repository.GreenroomNotificationTargetRepository;
 import be.notification.repository.GreenroomNotificationUserPreferenceRepository;
@@ -23,6 +27,7 @@ public class GreenroomNotificationEventService {
 	private final GreenroomNotificationTargetRepository targetRepository;
 	private final GreenroomNotificationUserPreferenceRepository preferenceRepository;
 	private final GreenroomNotificationProcessedEventRepository processedEventRepository;
+	private final GreenroomNotificationHistoryRepository historyRepository;
 
 	@Transactional
 	public void handleTicketCreated(GreenroomTicketCreatedEvent event) {
@@ -41,6 +46,17 @@ public class GreenroomNotificationEventService {
 			));
 		target.changeEnabled(enabled);
 		targetRepository.save(target);
+		historyRepository.save(
+			GreenroomNotificationHistory.success(
+				event.userId(),
+				event.ticketId(),
+				0,
+				1,
+				NotificationChannel.PUSH,
+				immediateIdempotencyKey(event),
+				Instant.now()
+			)
+		);
 		saveProcessed(event.eventId(), event.eventType());
 	}
 
@@ -77,5 +93,15 @@ public class GreenroomNotificationEventService {
 
 	private void saveProcessed(UUID eventId, String eventType) {
 		processedEventRepository.save(GreenroomNotificationProcessedEvent.create(eventId, eventType));
+	}
+
+	private String immediateIdempotencyKey(GreenroomTicketCreatedEvent event) {
+		return event.userId()
+			+ ":"
+			+ event.ticketId()
+			+ ":"
+			+ event.eventId()
+			+ ":0:1:"
+			+ NotificationChannel.PUSH.name();
 	}
 }
