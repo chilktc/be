@@ -7,6 +7,7 @@ import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 import be.greenroom.ai.domain.Podcast;
 import be.greenroom.ai.dto.request.PodcastEpisodeIngestRequest;
+import be.greenroom.ai.dto.response.PodcastResponse;
 import be.greenroom.ai.repository.PodcastRepository;
 import be.greenroom.ticket.domain.Ticket;
 import be.greenroom.ticket.repository.TicketRepository;
@@ -40,5 +41,12 @@ public class PodcastService {
 			)
 		);
 		log.info("[AI_INGEST] PodcastService saved podcast sessionId={}, userId={}", request.sessionId(), ticket.getUserId());
+	}
+
+	@Transactional(readOnly = true)
+	public PodcastResponse getBySessionId(String sessionId) {
+		return podcastRepository.findBySessionId(sessionId)
+			.map(PodcastResponse::from)
+			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_PODCAST));
 	}
 }
