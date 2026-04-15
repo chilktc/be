@@ -131,7 +131,8 @@ public class AuthService {
 			user.getId(),
 			user.getEmail(),
 			user.getNickname(),
-			user.isFirstLogin()
+			user.isFirstLogin(),
+			user.getRole()
 		);
 	}
 }
