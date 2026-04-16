@@ -78,11 +78,17 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory {
 
 			Boolean firstLogin = claims.get("first_login", Boolean.class);
 			String path = exchange.getRequest().getURI().getPath();
+			String method = exchange.getRequest().getMethod() != null
+				? exchange.getRequest().getMethod().name()
+				: "";
+			boolean isDeleteMyAccount = "DELETE".equals(method)
+				&& "/users/me".equals(path);
 
 			if (Boolean.TRUE.equals(firstLogin)
 				&& !path.startsWith("/auth/me")
 				&& !path.startsWith("/auth/consent")
-				&& !path.startsWith("/auth/logout")) {
+				&& !path.startsWith("/auth/logout")
+				&& !isDeleteMyAccount) {
 
 				exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
 				return exchange.getResponse().setComplete();
