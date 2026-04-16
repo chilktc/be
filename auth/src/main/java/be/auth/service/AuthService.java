@@ -61,8 +61,7 @@ public class AuthService {
 		}
 
 		var user = userRepository.findByIdOrThrow(userId, ErrorCode.NOT_FOUND_USER);
-
-		Preconditions.validate(user.isActive(), ErrorCode.ACCOUNT_INACTIVATED);
+		validateJwtLoginUser(user);
 
 		var newAccessExp = jwtService.getAccessExpiration();
 		var newRefreshExp = jwtService.getRefreshExpiration();
@@ -122,10 +121,7 @@ public class AuthService {
 	public MeResponse getMe(UUID userId) {
 
 		var user = userRepository.findByIdOrThrow(userId, ErrorCode.NOT_FOUND_USER);
-
-		if (!user.isActive()) {
-			throw new CustomException(ErrorCode.USER_DISABLED);
-		}
+		validateJwtLoginUser(user);
 
 		return new MeResponse(
 			user.getId(),
@@ -134,5 +130,10 @@ public class AuthService {
 			user.isFirstLogin(),
 			user.getRole()
 		);
+	}
+
+	private void validateJwtLoginUser(User user) {
+		Preconditions.validate(!user.isDeleted(), ErrorCode.ALREADY_DELETED_USER);
+		Preconditions.validate(user.isActive(), ErrorCode.USER_DISABLED);
 	}
 }
