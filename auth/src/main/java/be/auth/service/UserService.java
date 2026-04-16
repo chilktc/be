@@ -19,14 +19,12 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
 	private final UserRepository userRepository;
-	private final RefreshTokenService refreshTokenService;
 
 	@Transactional
 	public void deleteUser(UUID userId, String inputEmail) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
-		Preconditions.validate(!user.isDeleted(), ErrorCode.ALREADY_DELETED_USER);
 		Preconditions.validate(user.isActive(), ErrorCode.USER_DISABLED);
 
 		if (!user.getEmail().equals(inputEmail)) {
@@ -34,8 +32,7 @@ public class UserService {
 		}
 
 		user.delete();
-
-		refreshTokenService.delete(user.getId());
+		userRepository.flush();
 	}
 
 	private static final Pattern PATTERN =

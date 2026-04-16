@@ -265,6 +265,10 @@ public class User {
 	}
 
 	public void delete() {
+		if (this.isDeleted) {
+			return;
+		}
+
 		this.isDeleted = true;
 		this.deletedAt = LocalDateTime.now();
 		this.isActive = false;

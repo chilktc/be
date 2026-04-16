@@ -16,10 +16,9 @@ import org.junit.jupiter.api.Test;
 
 public class UserServiceTest {
 	private final UserRepository userRepository = mock(UserRepository.class);
-	private final RefreshTokenService refreshTokenService = mock(RefreshTokenService.class);
 
 	private final UserService userService =
-		new UserService(userRepository, refreshTokenService);
+		new UserService(userRepository);
 
 	@Test
 	@DisplayName("회원 탈퇴 성공")
@@ -38,7 +37,7 @@ public class UserServiceTest {
 		assertThat(user.isActive()).isFalse();
 		assertThat(user.getEmail()).contains("_deleted_");
 
-		verify(refreshTokenService).delete(userId);
+		verify(userRepository).flush();
 	}
 
 	@Test
@@ -59,8 +58,8 @@ public class UserServiceTest {
 	}
 
 	@Test
-	@DisplayName("이미 삭제된 유저 탈퇴 시도")
-	void 회원_이미_삭제됨() {
+	@DisplayName("비활성화 유저 탈퇴 시도")
+	void 비활성화_유저_탈퇴_실패() {
 		// given
 		UUID userId = UUID.randomUUID();
 		User user = User.createServerUser(userId, "test@test.com", "pw", Role.USER);
@@ -73,6 +72,6 @@ public class UserServiceTest {
 			userService.deleteUser(userId, "test@test.com")
 		).isInstanceOf(CustomException.class)
 			.extracting(e -> ((CustomException) e).getErrorCode())
-			.isEqualTo(ErrorCode.ALREADY_DELETED_USER);
+			.isEqualTo(ErrorCode.USER_DISABLED);
 	}
 }
