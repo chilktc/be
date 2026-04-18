@@ -12,6 +12,7 @@ import be.notification.domain.GreenroomNotificationTarget;
 import be.notification.domain.GreenroomNotificationUserPreference;
 import be.notification.domain.NotificationChannel;
 import be.notification.event.GreenroomTicketCreatedEvent;
+import be.notification.event.GreenroomTicketDeletedEvent;
 import be.notification.event.GreenroomTicketResolvedEvent;
 import be.notification.event.GreenroomUserNotificationPreferenceUpdatedEvent;
 import be.notification.repository.GreenroomNotificationHistoryRepository;
@@ -69,6 +70,16 @@ public class GreenroomNotificationEventService {
 			target.resolve();
 			targetRepository.save(target);
 		});
+		saveProcessed(event.eventId(), event.eventType());
+	}
+
+	@Transactional
+	public void handleTicketDeleted(GreenroomTicketDeletedEvent event) {
+		if (isAlreadyProcessed(event.eventId())) {
+			return;
+		}
+		historyRepository.deleteByTicketId(event.ticketId());
+		targetRepository.deleteByTicketId(event.ticketId());
 		saveProcessed(event.eventId(), event.eventType());
 	}
 

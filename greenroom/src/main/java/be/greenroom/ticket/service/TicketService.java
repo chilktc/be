@@ -21,6 +21,7 @@ import be.greenroom.ai.dto.response.SessionCreateResponse;
 import be.greenroom.notification.service.GreenroomNotificationEventPublisher;
 import be.greenroom.notification.event.GreenroomNotificationEventType;
 import be.greenroom.notification.event.GreenroomTicketCreatedEvent;
+import be.greenroom.notification.event.GreenroomTicketDeletedEvent;
 import be.greenroom.ticket.domain.Ticket;
 import be.greenroom.ticket.dto.request.CreateTicketRequest;
 import be.greenroom.ticket.dto.response.TicketPreviewPageResponse;
@@ -132,6 +133,15 @@ public class TicketService {
 			aiSessionRedisService.deleteCompleted(sessionId);
 			aiSessionRedisService.deleteIfMatches(userId, sessionId);
 		}
+
+		GreenroomTicketDeletedEvent event = new GreenroomTicketDeletedEvent(
+			UUID.randomUUID(),
+			GreenroomNotificationEventType.GREENROOM_TICKET_DELETED.name(),
+			LocalDateTime.now(),
+			ticketId,
+			userId
+		);
+		eventPublisher.publish(userId.toString(), event);
 
 		ticketRepository.delete(ticket);
 	}
