@@ -71,7 +71,7 @@ spring:
             - id: greenroom-ai-tickets
               uri: http://${GREENROOM_SERVER_HOST:localhost}:${GREENROOM_SERVER_PORT:8082}
               predicates:
-                - Path=/greenroom/ai/tickets
+                - Path=/greenroom/ai/tickets, /greenroom/ai/tickets/**
               filters:
                 - JwtAuthenticationFilter
 
