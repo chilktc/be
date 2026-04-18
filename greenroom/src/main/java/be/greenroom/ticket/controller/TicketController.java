@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,5 +72,18 @@ public class TicketController {
 	) {
 		UUID userId = UUID.fromString(userIdHeader);
 		return ApiResult.ok(ticketService.getTicket(userId, ticketId));
+	}
+
+	@Operation(summary = "그린룸 입장권 삭제", description = "ticketId로 그린룸 입장권과 내부 연관 데이터를 삭제합니다.")
+	@ApiErrorCodeExample(ErrorCode.NO_TICKET_ACCESS)
+	@DeleteMapping("/{ticketId}")
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResult<Void> deleteTicket(
+		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
+		@PathVariable UUID ticketId
+	) {
+		UUID userId = UUID.fromString(userIdHeader);
+		ticketService.deleteTicket(userId, ticketId);
+		return ApiResult.ok();
 	}
 }

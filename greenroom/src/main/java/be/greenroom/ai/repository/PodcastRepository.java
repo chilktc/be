@@ -9,4 +9,5 @@ import be.greenroom.ai.domain.Podcast;
 
 public interface PodcastRepository extends JpaRepository<Podcast, UUID> {
 	Optional<Podcast> findBySessionId(String sessionId);
+	void deleteBySessionId(String sessionId);
 }
