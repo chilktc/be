@@ -8,11 +8,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import be.common.api.ApiResult;
-import be.greenroom.ai.dto.request.ContentAnalysisIngestRequest;
 import be.greenroom.ai.dto.request.CreateMindFrequencyRequest;
-import be.greenroom.ai.dto.request.EmotionLogIngestRequest;
 import be.greenroom.ai.dto.request.PodcastEpisodeIngestRequest;
-import be.greenroom.ai.dto.request.VisualizationIngestRequest;
+import be.greenroom.ai.service.AiIngestRequestLogService;
 import be.greenroom.ai.service.MindFrequencyService;
 import be.greenroom.ai.service.PodcastService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,44 +28,50 @@ public class IngestController {
 
 	private final PodcastService podcastService;
 	private final MindFrequencyService mindFrequencyService;
+	private final AiIngestRequestLogService aiIngestRequestLogService;
 
 	@Operation(summary = "감정 로그 수신", description = "요청을 수신하고 즉시 200 OK를 반환합니다.")
 	@PostMapping("/emotion_logs")
 	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<Void> receiveEmotionLogs(@RequestBody EmotionLogIngestRequest request) {
+	public ApiResult<Void> receiveEmotionLogs(@RequestBody String request) {
 		log.info("[AI_INGEST] received emotion_logs request={}", request);
+		aiIngestRequestLogService.save("emotion_logs", request);
 		return ApiResult.ok();
 	}
 
 	@Operation(summary = "시각화 수신", description = "요청을 수신하고 즉시 200 OK를 반환합니다.")
 	@PostMapping("/visualizations")
 	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<Void> receiveVisualizations(@RequestBody EmotionLogIngestRequest request) {
+	public ApiResult<Void> receiveVisualizations(@RequestBody String request) {
 		log.info("[AI_INGEST] received visualizations request={}", request);
+		aiIngestRequestLogService.save("visualizations", request);
 		return ApiResult.ok();
 	}
 
 	@Operation(summary = "팟캐스트 메타데이터 수신", description = "요청을 수신하고 즉시 200 OK를 반환합니다.")
 	@PostMapping("/podcast_metadata")
 	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<Void> receivePodcastMetadata(@RequestBody EmotionLogIngestRequest request) {
+	public ApiResult<Void> receivePodcastMetadata(@RequestBody String request) {
 		log.info("[AI_INGEST] received podcast_metadata request={}", request);
+		aiIngestRequestLogService.save("podcast_metadata", request);
 		return ApiResult.ok();
 	}
 
 	@Operation(summary = "콘텐츠 분석 수신", description = "요청을 수신하고 즉시 200 OK를 반환합니다.")
 	@PostMapping("/content_analyses")
 	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<Void> receiveContentAnalyses(@RequestBody EmotionLogIngestRequest request) {
+	public ApiResult<Void> receiveContentAnalyses(@RequestBody String request) {
 		log.info("[AI_INGEST] received content_analyses request={}", request);
+		aiIngestRequestLogService.save("content_analyses", request);
 		return ApiResult.ok();
 	}
 
 	@Operation(summary = "학습데이터 수신", description = "요청을 수신하고 즉시 200 OK를 반환합니다.")
 	@PostMapping("/learning")
 	@ResponseStatus(HttpStatus.OK)
-	public ApiResult<Void> receiveLearning(@RequestBody EmotionLogIngestRequest request) {
+	public ApiResult<Void> receiveLearning(@RequestBody String request) {
 		log.info("[AI_INGEST] received learning request={}", request);
+		aiIngestRequestLogService.save("learning", request);
 		return ApiResult.ok();
 	}
 
