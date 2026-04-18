@@ -24,6 +24,8 @@ public interface GreenroomNotificationHistoryRepository extends JpaRepository<Gr
 
 	long deleteByIdempotencyKeyIn(Collection<String> idempotencyKeys);
 
+	long deleteByTicketId(UUID ticketId);
+
 	@Query("""
 		select h
 		from GreenroomNotificationHistory h
