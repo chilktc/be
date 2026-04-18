@@ -22,6 +22,8 @@ public interface GreenroomNotificationTargetRepository extends JpaRepository<Gre
 
 	List<GreenroomNotificationTarget> findByUserId(UUID userId);
 
+	void deleteByTicketId(UUID ticketId);
+
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("""
 		update GreenroomNotificationTarget t

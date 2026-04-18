@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import be.notification.event.GreenroomNotificationEventType;
 import be.notification.event.GreenroomTicketCreatedEvent;
+import be.notification.event.GreenroomTicketDeletedEvent;
 import be.notification.event.GreenroomTicketResolvedEvent;
 import be.notification.event.GreenroomUserNotificationPreferenceUpdatedEvent;
 import be.notification.service.GreenroomNotificationEventService;
@@ -38,6 +39,8 @@ public class GreenroomNotificationEventConsumer {
 				eventService.handleTicketCreated(objectMapper.treeToValue(root, GreenroomTicketCreatedEvent.class));
 			case GREENROOM_TICKET_RESOLVED ->
 				eventService.handleTicketResolved(objectMapper.treeToValue(root, GreenroomTicketResolvedEvent.class));
+			case GREENROOM_TICKET_DELETED ->
+				eventService.handleTicketDeleted(objectMapper.treeToValue(root, GreenroomTicketDeletedEvent.class));
 			case GREENROOM_USER_NOTIFICATION_PREFERENCE_UPDATED ->
 				eventService.handleUserPreferenceUpdated(
 					objectMapper.treeToValue(root, GreenroomUserNotificationPreferenceUpdatedEvent.class)
