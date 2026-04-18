@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import be.common.api.CustomException;
 import be.common.api.ErrorCode;
+import be.common.utils.Preconditions;
 import be.greenroom.ai.domain.Podcast;
 import be.greenroom.ai.dto.request.PodcastEpisodeIngestRequest;
 import be.greenroom.ai.dto.response.PodcastResponse;
@@ -46,16 +47,25 @@ public class PodcastService {
 	}
 
 	@Transactional(readOnly = true)
-	public PodcastResponse getBySessionId(String sessionId) {
+	public PodcastResponse getBySessionId(UUID userId, String sessionId) {
+		Ticket ticket = ticketRepository.findBySessionId(sessionId)
+			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
+		validateOwner(ticket, userId);
+
 		return podcastRepository.findBySessionId(sessionId)
 			.map(PodcastResponse::from)
 			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_PODCAST));
 	}
 
 	@Transactional(readOnly = true)
-	public PodcastResponse getByTicketId(UUID ticketId) {
+	public PodcastResponse getByTicketId(UUID userId, UUID ticketId) {
 		Ticket ticket = ticketRepository.findById(ticketId)
 			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
-		return getBySessionId(ticket.getSessionId());
+		validateOwner(ticket, userId);
+		return getBySessionId(userId, ticket.getSessionId());
+	}
+
+	private void validateOwner(Ticket ticket, UUID userId) {
+		Preconditions.validate(userId.equals(ticket.getUserId()), ErrorCode.NO_TICKET_ACCESS);
 	}
 }
