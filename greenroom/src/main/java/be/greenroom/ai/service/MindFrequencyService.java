@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import be.common.api.CustomException;
 import be.common.api.ErrorCode;
+import be.common.utils.Preconditions;
 import be.greenroom.ai.domain.MindFrequency;
 import be.greenroom.ai.dto.request.CreateMindFrequencyRequest;
 import be.greenroom.ai.dto.response.MindFrequencyResponse;
@@ -68,14 +69,22 @@ public class MindFrequencyService {
 	}
 
 	@Transactional(readOnly = true)
-	public MindFrequencyResponse getBySessionId(String sessionId) {
+	public MindFrequencyResponse getBySessionId(UUID userId, String sessionId) {
+		Ticket ticket = ticketRepository.findBySessionId(sessionId)
+			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
+		validateOwner(ticket, userId);
+
 		return mindFrequencyRepository.findBySessionId(sessionId)
 			.map(MindFrequencyResponse::from)
 			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_MIND_FREQUENCY));
 	}
 
 	@Transactional(readOnly = true)
-	public MindFrequencyWithPodcastResponse getByTicketId(UUID ticketId) {
+	public MindFrequencyWithPodcastResponse getByTicketId(UUID userId, UUID ticketId) {
+		Ticket ticket = ticketRepository.findById(ticketId)
+			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
+		validateOwner(ticket, userId);
+
 		if (trackingRepository.existsByTicketIdAndStatus(ticketId, TrackingStatus.RESOLVED)) {
 			throw new CustomException(ErrorCode.ALREADY_RESOLVED_TICKET);
 		}
@@ -88,5 +97,9 @@ public class MindFrequencyService {
 			.orElse(null);
 
 		return MindFrequencyWithPodcastResponse.from(mindFrequency, imageUrl);
+	}
+
+	private void validateOwner(Ticket ticket, UUID userId) {
+		Preconditions.validate(userId.equals(ticket.getUserId()), ErrorCode.NO_TICKET_ACCESS);
 	}
 }

@@ -73,36 +73,44 @@ public class AiTicketController {
 	@GetMapping("/mind-frequencies")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<MindFrequencyResponse> getMindFrequency(
+		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
 		@RequestHeader("X-AI-Session-Id") @NotBlank String sessionId
 	) {
-		return ApiResult.ok(mindFrequencyService.getBySessionId(sessionId));
+		UUID userId = UUID.fromString(userIdHeader);
+		return ApiResult.ok(mindFrequencyService.getBySessionId(userId, sessionId));
 	}
 
 	@Operation(summary = "마음 주파수 조회 by ticketId", description = "ticketId로 마음 주파수를 조회하며, 트래킹이 이미 완료되었다면 에러를 반환합니다.")
 	@GetMapping("/mind-frequencies/{ticketId}")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<MindFrequencyWithPodcastResponse> getMindFrequencyByTicketId(
+		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
 		@PathVariable UUID ticketId
 	) {
-		return ApiResult.ok(mindFrequencyService.getByTicketId(ticketId));
+		UUID userId = UUID.fromString(userIdHeader);
+		return ApiResult.ok(mindFrequencyService.getByTicketId(userId, ticketId));
 	}
 
 	@Operation(summary = "팟캐스트 조회", description = "헤더의 sessionId로 팟캐스트를 조회합니다.")
 	@GetMapping("/podcast")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<PodcastResponse> getPodcast(
+		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
 		@RequestHeader("X-AI-Session-Id") @NotBlank String sessionId
 	) {
-		return ApiResult.ok(podcastService.getBySessionId(sessionId));
+		UUID userId = UUID.fromString(userIdHeader);
+		return ApiResult.ok(podcastService.getBySessionId(userId, sessionId));
 	}
 
 	@Operation(summary = "팟캐스트 조회 by ticketId", description = "ticketId로 팟캐스트를 조회합니다.")
 	@GetMapping("/podcast/{ticketId}")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResult<PodcastResponse> getPodcastByTicketId(
+		@RequestHeader("X-User-Id") @NotBlank String userIdHeader,
 		@PathVariable UUID ticketId
 	) {
-		return ApiResult.ok(podcastService.getByTicketId(ticketId));
+		UUID userId = UUID.fromString(userIdHeader);
+		return ApiResult.ok(podcastService.getByTicketId(userId, ticketId));
 	}
 
 	@Operation(summary = "선택한 스토리 전달", description = "헤더의 sessionId와 요청의 storyId를 합쳐 AI 서버에 전달합니다.")
