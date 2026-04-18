@@ -12,6 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import be.common.api.CustomException;
 import be.common.api.ErrorCode;
 import be.common.utils.Preconditions;
+import be.greenroom.ai.repository.AiIngestRequestLogRepository;
+import be.greenroom.ai.repository.MindFrequencyRepository;
+import be.greenroom.ai.repository.PodcastRepository;
 import be.greenroom.ai.client.AiServerClient;
 import be.greenroom.ai.dto.request.SessionCreateRequest;
 import be.greenroom.ai.dto.response.SessionCreateResponse;
@@ -25,6 +28,7 @@ import be.greenroom.ticket.dto.response.TicketPreviewResponse;
 import be.greenroom.ticket.dto.response.TicketResponse;
 import be.greenroom.ticket.repository.TicketRepository;
 import be.greenroom.ticket.repository.dao.TicketPreviewDao;
+import be.greenroom.tracking.repository.TrackingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +42,10 @@ public class TicketService {
 	private final AiServerClient aiServerClient;
 	private final AiSessionRedisService aiSessionRedisService;
 	private final AsyncTicketCreateService asyncTicketCreateService;
+	private final TrackingRepository trackingRepository;
+	private final MindFrequencyRepository mindFrequencyRepository;
+	private final PodcastRepository podcastRepository;
+	private final AiIngestRequestLogRepository aiIngestRequestLogRepository;
 
     @Transactional
     public TicketResponse create(UUID userId, CreateTicketRequest request) {
@@ -105,6 +113,27 @@ public class TicketService {
 			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
 		Preconditions.validate(userId.equals(ticket.getUserId()), ErrorCode.NO_TICKET_ACCESS);
 		return TicketResponse.from(ticket);
+	}
+
+	@Transactional
+	public void deleteTicket(UUID userId, UUID ticketId) {
+		Ticket ticket = ticketRepository.findById(ticketId)
+			.orElseThrow(() -> new CustomException(ErrorCode.DOES_NOT_EXIST_TICKET));
+		Preconditions.validate(userId.equals(ticket.getUserId()), ErrorCode.NO_TICKET_ACCESS);
+
+		String sessionId = ticket.getSessionId();
+
+		trackingRepository.deleteAllByTicketId(ticketId);
+		mindFrequencyRepository.deleteByTicketId(ticketId);
+
+		if (sessionId != null && !sessionId.isBlank()) {
+			podcastRepository.deleteBySessionId(sessionId);
+			aiIngestRequestLogRepository.deleteAllBySessionId(sessionId);
+			aiSessionRedisService.deleteCompleted(sessionId);
+			aiSessionRedisService.deleteIfMatches(userId, sessionId);
+		}
+
+		ticketRepository.delete(ticket);
 	}
 
 	private Ticket saveAndPublishTicket(UUID userId, CreateTicketRequest request, String ticketName) {
