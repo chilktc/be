@@ -11,4 +11,5 @@ public interface MindFrequencyRepository extends JpaRepository<MindFrequency, UU
 
 	Optional<MindFrequency> findBySessionId(String sessionId);
 	Optional<MindFrequency> findByTicketId(UUID ticketId);
+	void deleteByTicketId(UUID ticketId);
 }

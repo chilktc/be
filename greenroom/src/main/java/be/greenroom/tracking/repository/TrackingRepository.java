@@ -11,4 +11,5 @@ import be.greenroom.tracking.domain.TrackingStatus;
 public interface TrackingRepository extends JpaRepository<Tracking, UUID> {
 	List<Tracking> findByTicketIdOrderByCreatedAtDesc(UUID ticketId);
 	boolean existsByTicketIdAndStatus(UUID ticketId, TrackingStatus status);
+	void deleteAllByTicketId(UUID ticketId);
 }

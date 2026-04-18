@@ -41,8 +41,21 @@ public class AiSessionRedisService {
 		redisTemplate.delete(key(userId));
 	}
 
+	public void deleteIfMatches(UUID userId, String sessionId) {
+		String currentSessionId = get(userId);
+		if (sessionId != null && sessionId.equals(currentSessionId)) {
+			log.info("[AI_TICKET][REDIS] deleteIfMatches userId={}, sessionId={}", userId, sessionId);
+			redisTemplate.delete(key(userId));
+		}
+	}
+
 	public void saveCompleted(String sessionId, Duration ttl) {
 		log.info("[AI_TICKET][REDIS] saveCompleted sessionId={}, ttlSeconds={}", sessionId, ttl.getSeconds());
 		redisTemplate.opsForValue().set(completedKey(sessionId), Boolean.TRUE.toString(), ttl);
+	}
+
+	public void deleteCompleted(String sessionId) {
+		log.info("[AI_TICKET][REDIS] deleteCompleted sessionId={}", sessionId);
+		redisTemplate.delete(completedKey(sessionId));
 	}
 }
