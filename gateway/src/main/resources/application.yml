@@ -20,10 +20,8 @@ spring:
               '[/**]':
                 allow-credentials: true
                 allowed-origins:
-                  - http://localhost:3000
                   - https://bloom-chil.com
-                  - https://api.bloom-chil.com
-                  - https://bloom-chil-test.vercel.app
+                  - https://app.bloom-chil.com
                 allowed-methods:
                   - GET
                   - POST
