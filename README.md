@@ -4,6 +4,12 @@
 
 티켓 생성부터 상태 추적, AI 기반 분석, 주기 알림까지 하나의 흐름으로 유기적으로 연결해 사용자 경험의 연속성을 높입니다.
 
+## 🎬 시연 영상
+
+서비스 주요 기능과 사용자 흐름을 영상으로 확인할 수 있습니다.
+
+[![BloomChil Demo](https://img.shields.io/badge/Watch_Demo_Video-FF4F8B?style=for-the-badge&logo=googleplay&logoColor=white)](https://cdn.leetekwoo.com/kt-cloud-techup/chil-bloom-%EC%8B%9C%EC%97%B0%EC%98%81%EC%83%81.mp4)
+
 ### 핵심 목표
 
 - 사용자 인증 및 권한을 안정적으로 관리한다.
